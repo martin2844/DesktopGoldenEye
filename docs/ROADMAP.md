@@ -31,7 +31,7 @@ Every milestone has an exit gate. A milestone is not complete because code exist
 
 ## M1 — Reproducible desktop vanilla baseline
 
-**Status:** first Windows proof complete (clean native build, ordinary-ROM validation, Dam render). A second clean machine and later mission remain before the full gate is closed.
+**Status:** two Windows proofs exist: the editable MGB64 build and the checksum-pinned 1964GEPD Quality Adapter. The exact ROM boots through both. A human Dam completion, later missions, and second-machine quality setup remain before the full gate is closed.
 
 **Purpose:** prove there is a game worth wrapping.
 
@@ -54,7 +54,7 @@ Every milestone has an exit gate. A milestone is not complete because code exist
 
 ## M2 — Asset-free launcher and direct ROM import
 
-**Status:** largely inherited from MGB64 for the first supported US ROM. Cache/removal semantics in the original plan are no longer required because MGB64 consumes the selected ROM directly at runtime.
+**Status:** implemented for the first supported US ROM in both active Adapters. 1964GEPD uses a verified path plus no-space hard-link only when required; MGB64 consumes the selected ROM directly. Neither copies ROM data into Git or a release.
 
 **Purpose:** achieve the Gen1Recomp first-run model.
 
@@ -79,6 +79,8 @@ Every milestone has an exit gate. A milestone is not complete because code exist
 
 ## M3 — Runtime correctness and presentation
 
+**Status:** reopened after human testing rejected MGB64 mouse feel and rendering. 1964GEPD + GLideN64 is now the quality candidate; automated boot/render evidence passes, while human input/audio/mission qualification remains.
+
 **Purpose:** prevent game defects from becoming mod semantics.
 
 **Work:**
@@ -90,6 +92,7 @@ Every milestone has an exit gate. A milestone is not complete because code exist
 - modern dual-analog/control mapping;
 - scripted replay/trace capture across missions;
 - multiplayer menus/local baseline classification.
+- compare quality evidence against MGB64 and keep the latter experimental until it passes the same human gate;
 
 **Exit gate:**
 

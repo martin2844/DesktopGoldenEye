@@ -2,11 +2,11 @@
 
 An unofficial pet-project plan for a native GoldenEye 007 PC runtime with a Gen1Recomp-style modding experience. Android is a later nice-to-have.
 
-> Status: first Windows modding vertical slice works locally. The user's ordinary US ROM boots Dam, the launcher discovers and enables packages, and isolated Lua mods execute a small semantic game API. No ROM data is included.
+> Status: the quality-first Windows launcher now boots the user's ordinary US ROM through verified 1964GEPD + GLideN64, while the existing MGB64 build remains an experimental Lua-modding runtime. No ROM data or third-party emulator binaries are committed.
 
 ## Product promise
 
-A player supplies a legally obtained GoldenEye 007 US ROM. The launcher verifies it, creates a private local game install, and runs it natively on PC. The `.gemod` format remains platform-neutral so a future Android port can consume the same Lua packages. A new modder should be able to scaffold, run, validate, and package a Lua mod in under 15 minutes without knowing N64 memory addresses.
+A player supplies a legally obtained GoldenEye 007 US ROM. The launcher verifies it and selects a runtime behind one Interface. Today, 1964GEPD provides the best Windows play experience and MGB64 hosts the experimental Lua mod slice. The longer-term goal is to reunify quality and friendly modding on a native/decomp-based runtime. The `.gemod` format remains platform-neutral for later PC and optional Android work.
 
 The project deliberately separates two lanes:
 
@@ -15,7 +15,8 @@ The project deliberately separates two lanes:
 
 ## Recommended technical direction
 
-- MGB64's portable C engine and C++17 Dear ImGui application shell, pinned in `runtime/mgb64`.
+- 1964GEPD + GLideN64 as the immediate Windows quality Adapter, downloaded from its official release and checksum-verified.
+- MGB64's portable C engine and C++17 Dear ImGui shell, pinned in `runtime/mgb64`, as the experimental Lua/mod Adapter.
 - GoldenRecomp and N64Recomp remain research inputs, not the reproducible product baseline.
 - A Lua 5.4-compatible author Interface (currently hosted by Lua 5.5.1) as the friendly mod language.
 - SDL2 plus the runtime's WebGPU/OpenGL renderer paths.
@@ -23,21 +24,23 @@ The project deliberately separates two lanes:
 - A future thin Kotlin Android shell only after the desktop alpha is healthy.
 - CMake and Ninja for native builds; Python for author tools and code generation.
 
-The runtime is kept behind an explicit subtree boundary so upstream updates remain auditable. Public release provenance is still a gate even though local build and gameplay are proven.
+The Runtime Interface is the stable Seam. Emulator acquisition/configuration, ROM byte order, and MGB64 environment details remain Adapter Implementations. Public release provenance is still a gate even though the local quality install and experimental mod slice both run.
 
 ## Start here
 
 1. Read [Prerequisites](docs/PREREQUISITES.md) for the ROM, tools, hardware, and current machine gaps.
-2. Read [Current Status](docs/CURRENT_STATUS.md) for the exact commands and evidence from the first working slice.
-3. Read [Upstream Evaluation](docs/UPSTREAM_EVALUATION.md) for the baseline decision and unresolved blockers.
-4. Read [Architecture](docs/ARCHITECTURE.md) and [Modding Model](docs/MODDING_MODEL.md).
-5. Use [Roadmap](docs/ROADMAP.md) and [Plan](docs/PLAN.md) for gated implementation order.
+2. Read [Quality Baseline](docs/QUALITY_BASELINE.md) for the ready-to-play launcher, controls, hashes, and current tradeoffs.
+3. Read [Current Status](docs/CURRENT_STATUS.md) for exact commands and evidence from both runtime tracks.
+4. Read [Upstream Evaluation](docs/UPSTREAM_EVALUATION.md) for the baseline decision and unresolved blockers.
+5. Read [Architecture](docs/ARCHITECTURE.md) and [Modding Model](docs/MODDING_MODEL.md).
+6. Use [Roadmap](docs/ROADMAP.md) and [Plan](docs/PLAN.md) for gated implementation order.
 
 ## Planning index
 
 | Document | Purpose |
 |---|---|
 | [CURRENT_STATUS.md](docs/CURRENT_STATUS.md) | Working build, evidence, commands, manifest contract, and immediate next slice |
+| [QUALITY_BASELINE.md](docs/QUALITY_BASELINE.md) | Default Windows runtime, quality profile, mouse/WASD ownership, checksums, and launch instructions |
 | [PLAN.md](docs/PLAN.md) | Comprehensive execution plan and definition of done |
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Deep Modules, Interfaces, Seams, lifecycle, and proposed repository layout |
 | [GEN1RECOMP_PARITY.md](docs/GEN1RECOMP_PARITY.md) | Feature-for-feature experience target |

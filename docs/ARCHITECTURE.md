@@ -13,17 +13,17 @@ user ROM
 GameImage.inspect/normalize
    │
    ▼
-MGB64 Windows/Linux Adapter ──► GameRuntime ─► WebGPU/OpenGL
-                                   │
-                                   ▼
-                              ModPlatform
-                 ┌──────────┴──────────┐
-                 ▼                     ▼
-          Lua author lane       native expert lane
-                 │
-                 ▼
-        GoldenEye semantic Interface
-       registries + events + hooks + saves
+Runtime Interface: verify → configure → launch
+   ├── 1964GEPD Quality Adapter ──► GLideN64 + Mouse Injector
+   └── MGB64 Experimental Adapter ──► WebGPU/OpenGL + ModPlatform
+                                                        │
+                                      ┌─────────────────┴─────────────┐
+                                      ▼                               ▼
+                               Lua author lane                 native expert lane
+                                      │
+                                      ▼
+                           GoldenEye semantic Interface
+                          registries + events + hooks + saves
 ```
 
 ## Architecture vocabulary
@@ -67,7 +67,7 @@ Other revisions are separate compatibility work. The ROM stays in the user's cho
 
 ### 2. GameRuntime
 
-**Responsibility:** own one executing game instance.
+**Responsibility:** own one executing game instance while keeping the selected runtime Implementation behind a stable launcher Seam.
 
 **Conceptual Interface:**
 
@@ -79,7 +79,7 @@ Checkpoint save_checkpoint(RuntimeSession&);
 void stop(RuntimeSession&);
 ```
 
-It hides recompiled functions, N64 memory and thread scheduling, audio queues, frame pacing, save emulation, bridge calls, and crash containment. The exact Interface will follow the selected upstream rather than forcing this sketch onto it.
+It hides recompiled/emulated functions, N64 memory and thread scheduling, audio queues, frame pacing, save emulation, plugin configuration, bridge calls, and crash containment. The first concrete launcher Interface is `verify → configure → launch`, implemented by the 1964GEPD Quality Adapter and MGB64 Experimental Adapter. This is a real Seam because both implementations run today and require materially different setup.
 
 Game simulation timing and presentation timing must be distinct. A higher display rate must not accelerate weapons, guards, doors, or mission scripts.
 
@@ -145,7 +145,7 @@ Kotlin should stay thin: permissions, file picker, settings screens, and lifecyc
 
 ### 7. RendererHost
 
-Desktop uses MGB64's proven WebGPU/OpenGL renderer paths. Windows is qualified first, followed by Linux. If the optional Android port begins later, it is not treated as another compile flag. That future spike must compare adapting the existing renderer, adding a GLES/Vulkan mobile Adapter, or deliberately deferring Android.
+The quality Windows Adapter uses GLideN64. The experimental mod Adapter uses MGB64's WebGPU/OpenGL paths. Windows is qualified first, followed by Linux only after a quality-capable runtime exists there. If the optional Android port begins later, it is not treated as another compile flag. That future spike must compare adapting the selected renderer, adding a GLES/Vulkan mobile Adapter, or deliberately deferring Android.
 
 Do not create a generic renderer Interface until the spike produces a second viable Adapter. Premature abstraction would hide no complexity and reduce Locality.
 

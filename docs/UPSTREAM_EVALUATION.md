@@ -1,16 +1,18 @@
 # Upstream evaluation
 
-## Implementation update — MGB64 selected
+## Implementation update — quality/runtime split
 
-The original N64Recomp recommendation below is retained as the historical Phase 0 hypothesis. It was superseded after direct build evidence on 2026-08-23.
+The original N64Recomp recommendation below is retained as the historical Phase 0 hypothesis. The project now has two runtime roles based on direct testing on 2026-08-23.
 
-The selected desktop baseline is now **MGB64**, pinned at `0d1d40b4`. Its Module is substantially deeper for this product: one portable C/C++ codebase already provides ordinary-ROM `.z64`/`.v64`/`.n64` validation, an in-process Dear ImGui launcher, SDL2 input/audio, WebGPU/OpenGL rendering, Windows/Linux/macOS build paths, saves, diagnostics, and direct mission boot. On this PC it built with GCC 16, validated the exact supported US `.n64` ROM, and rendered Dam.
+The default Windows player baseline is **1964GEPD** with its bundled GLideN64 and Mouse Injector plugins. It consumes the ordinary US ROM, includes years of GoldenEye-specific 60 fps/timing/input work, and is the strongest proven game-quality route that satisfies the user's current ROM-only requirement. The exact no-Discord-RPC release asset and ROM have both been hash-verified, and the game now boots through this repository's launcher.
+
+**MGB64**, pinned at `0d1d40b4`, remains the experimental mod baseline. Its deep Module provides ordinary-ROM validation, an in-process Dear ImGui launcher, SDL2 input/audio, editable portable C/C++, and the Lua host built in this repository. Direct user testing found its mouse feel and rendering quality unacceptable as the default player experience, consistent with its documented texture/fog/glass/platform gaps.
 
 GoldenRecomp was rejected as the implementation baseline because its pinned `lib/ge` source dependency is private/unavailable and the public mirror no longer contains the required commit or transformation branch. A build that cannot be reproduced from its documented inputs is not a viable foundation for this pet project.
 
-N64Recomp, N64ModernRuntime, RT64, and GoldenRecomp remain valuable research inputs. They are no longer dependencies on the shortest path to a Gen1Recomp-like player and mod-author experience.
+N64Recomp, N64ModernRuntime, GoldenRecomp, the complete GoldenEye decompilation, and the Perfect Dark PC port remain valuable long-term research inputs. A decomp/native line is the likely route to reunifying quality and friendly semantic mods; none is ready to replace 1964GEPD today under the direct-N64-ROM constraint.
 
-The selected runtime is vendored as a squashed subtree so local changes are editable and upstream provenance stays visible. Public binary redistribution remains gated on a file-level provenance and notice review; local gameplay success does not resolve that legal question.
+The experimental MGB64 runtime is vendored as a squashed subtree so local changes are editable and upstream provenance stays visible. The Quality Adapter downloads its exact upstream release instead. Public binary redistribution remains gated on a file-level provenance and notice review; local gameplay success does not resolve that legal question.
 
 ## Recommendation
 
@@ -38,7 +40,8 @@ The audit on 2026-08-23 examined:
 | [RT64](https://github.com/rt64/rt64) | current checkout during audit | desktop renderer, texture replacement | Android window paths contain explicit unimplemented branches |
 | [GoldenRecomp](https://github.com/kholdfuzion/GoldenRecomp) | `f31b5d1` | GoldenEye-specific recomp experiment and patch knowledge | work in progress; special transformed ROM/ELF flow; no release |
 | [GoldenEye decompilation](https://github.com/n64decomp/007) | `c4356466` | symbols, structures, behavior, build comparison | no obvious repository-level license; proprietary-header provenance needs review |
-| [MGB64](https://github.com/akratch/mgb64) | `0d1d40b4` | selected source-port runtime, launcher, renderer, direct ROM flow | public redistribution still needs file-level provenance review |
+| [MGB64](https://github.com/akratch/mgb64) | `0d1d40b4` | experimental mod runtime, launcher, renderer, direct ROM flow | documented fidelity/platform gaps; public redistribution still needs file-level provenance review |
+| [1964GEPD](https://github.com/Graslu/1964GEPD) | release `latest`, bundle dated 2023-07-03 | quality Windows Adapter, GoldenEye timing fixes, Mouse Injector, GLideN64 | Windows/emulator-only; aggregate plugin/texture licensing favors direct upstream retrieval |
 
 Revisions should be captured again in a machine-readable dependency lock when implementation begins.
 
@@ -49,9 +52,10 @@ Revisions should be captured again in a machine-readable dependency lock when im
 | N64Recomp + N64ModernRuntime + game patches | achievable through local import | strong | substantial port work | strong native base | useful research, longer integration | research |
 | GoldenRecomp unchanged | transformed ROM/ELF currently expected | early | absent | upstream N64Recomp lane | useful experiment | research/fork input |
 | GoldenEye decomp native port | local baserom build | potentially | potentially | must design | code understanding is strong, product integration unclear | reference, not first distribution line |
-| MGB64/source-port line | ordinary ROM directly | Windows/Linux/macOS | no established Android target | custom Lua layer required | active, launcher and gameplay already integrated | **selected** |
+| 1964GEPD + GLideN64 | ordinary US ROM directly | mature Windows bundle | no | ROM hacks, cheats, plugins | strongest proven ROM-only play quality | **quality Adapter** |
+| MGB64/source-port line | ordinary ROM directly | Windows/Linux/macOS paths | no established Android target | custom Lua layer implemented | editable but visible input/render gaps | **experimental Adapter** |
 | XBLA recomp projects | requires unreleased Xbox game files | some builds | some builds | varies | fails the N64-ROM requirement | reject |
-| emulator plus ROM patches | yes | mature | mature | mature ROM-hack ecosystem | does not create the requested native/mod author experience | compatibility input only |
+| generic emulator plus ROM patches | yes | mature | mature | mature ROM-hack ecosystem | less GoldenEye-specific than 1964GEPD | compatibility input only |
 
 ## Why not merely expose N64ModernRuntime mods?
 

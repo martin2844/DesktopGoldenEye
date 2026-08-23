@@ -54,12 +54,12 @@ provenance + runnable game
 
 ## Guiding decisions
 
-1. **Portable C plus C++17 are the runtime languages.** This preserves the proven MGB64 engine/application boundary instead of creating a rewrite.
+1. **Portable C plus C++17 remain the native/mod implementation languages.** The immediate 1964GEPD Quality Adapter is an external GPL C runtime; the launcher does not fork it merely to claim one language.
 2. **Lua 5.4 is the default mod language.** It gives the short, reloadable author loop seen in Gen1Recomp.
 3. **Windows is the first executable baseline.** It is built and ROM-smoke-tested through MSYS2/MinGW64. Linux becomes the second PC Adapter after the Lua vertical slice.
 4. **Python owns author/build tools.** It is suitable for schemas, scaffolding, lint orchestration, deterministic packaging, and inspection.
 5. **Semantic Interfaces precede breadth.** One deep weapon registry is worth more than dozens of thin memory wrappers.
-6. **MGB64's deep runtime and launcher Modules are reused.** The project adds a focused mod catalog, Lua host, resolver, transactions, and semantic hooks at their existing Seams.
+6. **Quality and mod hosting are separate Adapters for now.** 1964GEPD is the default player Implementation; MGB64 retains the focused mod catalog, Lua host, transactions, and semantic experiments. The Runtime Interface prevents launcher coupling to either.
 7. **Android is optional after desktop alpha.** Shared Interfaces stay portable, but Android cannot block the PC product.
 8. **Private import is a product feature.** Legal/provenance constraints shape architecture, CI, caching, and community tooling from day one.
 
@@ -203,7 +203,7 @@ Total to a narrow, genuinely pleasant Windows/Linux alpha: roughly 4–8 months 
 
 ## First two weeks
 
-The original schedule below is preserved as the execution baseline. As of 2026-08-23, Days 1–12 are materially complete: the Windows toolchain is installed, MGB64 is pinned and vendored, the ordinary ROM validates, Dam renders, and the Mods panel transactionally loads isolated Lua packages through one semantic game operation. The active work now moves to a schema-backed weapon patch and no-mod parity, while provenance and second-machine reproduction continue in parallel.
+The original schedule below is preserved as the execution baseline. As of 2026-08-23, the Windows toolchain is installed, MGB64 is pinned and vendored, the ordinary ROM validates, Dam renders, and the Mods panel transactionally loads isolated Lua packages through one semantic operation. User testing then exposed unacceptable MGB64 mouse/render quality. The immediate work has therefore moved back to M3: qualify the new 1964GEPD Quality Adapter across representative missions before expanding the mod Interface.
 
 ### Days 1–2: establish evidence
 

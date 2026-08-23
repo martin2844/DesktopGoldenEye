@@ -28,7 +28,7 @@ The importer should eventually accept z64, n64, and v64 byte orders, but Phase 0
 
 The ROM is not needed to install compilers, build the launcher, audit provenance, or run the ROM-free mod-platform tests. It is needed for playable GoldenEye validation.
 
-The selected MGB64 baseline consumes an ordinary `.z64`, `.v64`, or `.n64` image directly at runtime and normalizes byte order in memory. No GoldenRecomp-specific transformed ROM or matching ELF is required.
+Both active Adapters consume an ordinary `.z64`, `.v64`, or `.n64` image directly. The Windows Quality Adapter verifies the exact raw SHA-1 for each byte order before launching 1964GEPD; MGB64 normalizes in memory. No GoldenRecomp-specific transformed ROM or matching ELF is required.
 
 Keep the ROM outside this repository—for example in a private Windows ROM directory—and provide only its local path. Do not upload it, send it through chat, or copy it into an issue or CI artifact. From WSL, a Windows file such as `C:\Games\ROMs\GoldenEye 007 (USA).z64` is normally visible below `/mnt/c/Games/ROMs/`. We will store any configured path only in ignored local configuration.
 
@@ -116,15 +116,17 @@ Python 3.13 is usable for many tools, but dependencies may lag it. Prefer a Pyth
 
 ### Windows host audit
 
-Windows command interop works and Windows Git is installed at `C:\Program Files\Git\cmd\git.exe`. Visual Studio 2022 Build Tools and the C++ workload are installed. The working MGB64 build uses MSYS2 MinGW64 with GCC 16.2, CMake 4.4.2, Ninja, SDL2, Lua 5.5.1 (5.4-compatible author subset), Git, Python/Pillow, pkg-config, and zip. MSVC remains useful for research but is not required for the selected runtime.
+Windows command interop works and Windows Git is installed at `C:\Program Files\Git\cmd\git.exe`. Visual Studio 2022 Build Tools and the C++ workload are installed. The working experimental MGB64 build uses MSYS2 MinGW64 with GCC 16.2, CMake 4.4.2, Ninja, SDL2, Lua 5.5.1 (5.4-compatible author subset), Git, Python/Pillow, pkg-config, and zip. MSVC remains useful for research but is not required for either active Adapter.
 
-Run the reproducible workflow from the repository root:
+Run the experimental MGB64 build workflow from the repository root:
 
 ```sh
 ./scripts/dev-windows.sh all
 ```
 
 The corresponding MSYS2 packages are installed in the MinGW64 environment; on another PC the relevant additions are `mingw-w64-x86_64-lua` and `zip` alongside the compiler/CMake/Ninja/SDL2 packages.
+
+The default quality player does not require a compiler. `launcher/windows/GoldenEye.ps1 -Action Setup` downloads and verifies the official 1964GEPD no-Discord-RPC release, installs it privately, and creates a play command. See [QUALITY_BASELINE.md](QUALITY_BASELINE.md).
 
 ## Suggested Ubuntu/WSL desktop bootstrap
 

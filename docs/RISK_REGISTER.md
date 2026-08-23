@@ -6,7 +6,7 @@ Scale: probability and impact are Low/Medium/High. “Trigger” is the observab
 |---|---|---:|---:|---|---|
 | R1 | GoldenEye decomp/generated artifacts have unclear redistribution provenance | High | High | M0 file-by-file inventory; conservative local generation; qualified legal review before release | cannot classify a required public artifact |
 | R2 | No qualified Android host exists for the selected runtime | High | Medium | defer until desktop alpha; later time-boxed renderer/lifecycle spike; do not couple PC Interfaces to Android assumptions | no representative frame/lifecycle proof within optional spike |
-| R3 | MGB64 has later-mission correctness gaps despite passing Dam | Medium | High | run representative mission gate; keep upstream fidelity/issue census before freezing semantic hooks | persistent blockers in later missions |
+| R3 | MGB64 has visible input/render and possible later-mission correctness gaps despite passing Dam | High | High | keep it experimental; qualify 1964GEPD for play; choose a quality-capable native/decomp line before freezing more semantic hooks | default runtime cannot meet the human quality gate |
 | R4 | 60 fps presentation changes simulation behavior | High | High | separate clocks; weapon/AI/door/timer census; replay assertions at rates | state/event divergence by presentation rate |
 | R5 | custom GoldenEye graphics behavior leaves skybox/water/effects wrong | Medium | Medium | use MGB64's capture/fidelity harnesses and upstream general renderer fixes | mission clarity or completion affected |
 | R6 | direct ordinary-ROM flow regresses or leaks ROM data | Low | High | keep ROM outside Git; private smoke only; artifact scans; all byte orders tested | player needs a transformed image or release contains ROM bytes |
@@ -42,6 +42,8 @@ Scale: probability and impact are Low/Medium/High. “Trigger” is the observab
 3. **R4 timing:** incorrect simulation would poison gameplay and mod contracts.
 4. **R8 semantic stability:** brittle low-level Lua bindings would undermine the whole mod ecosystem.
 5. **R22 sustainability:** the architecture and release process must remain pet-project sized.
+
+The 1964GEPD split mitigates immediate R3 player impact but creates a temporary product gap: the best-playing Adapter and the Lua-moddable Adapter are different Implementations. D-019 owns that gap explicitly.
 
 Review these after every Phase 0/M1 experiment. Add evidence links and change probability rather than merely marking them “handled.”
 

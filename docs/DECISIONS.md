@@ -171,3 +171,19 @@ Each decision that changes should preserve the old entry, add a superseding entr
 **Why:** silently executing a discovered `main.lua` would turn a useful catalog feature into arbitrary native-user process access.
 
 **Evidence:** the gate now passes with isolated 8 MiB states, a 250 ms setup hook, unsafe standard libraries removed, explicit launcher enable state, one allowlisted semantic operation, and rollback tests for runaway/missing packages and host-state restoration.
+
+## D-019 — Split quality play from experimental mod hosting
+
+**Status:** Accepted; supersedes D-015 as the default player baseline  
+**Decision:** use the official checksum-pinned 1964GEPD no-Discord-RPC bundle as the Windows Quality Adapter. Retain MGB64 as the Experimental Adapter for editable Lua/mod research.
+
+**Evidence:** the user reported unacceptable MGB64 mouse feel and rendering defects. MGB64 itself documents texture/fog/glass and platform gaps. The verified 1964GEPD bundle supplies GoldenEye-specific 60 fps fixes, Mouse Injector 2.3, GLideN64, ordinary US ROM support, and has now booted the exact ROM through the new launcher on this PC.
+
+**Consequence:** quality and Lua mods do not yet coexist in one process. The shared Runtime Interface protects launcher/product work while the long-term native/decomp base is evaluated. Do not freeze more MGB64-specific Lua semantics until that decision is made.
+
+## D-020 — Retrieve rather than rehost the quality bundle
+
+**Status:** Accepted  
+**Decision:** download the official release and verify SHA-1 plus SHA-256. Do not commit or independently repackage its binaries.
+
+**Why:** the core and Mouse Injector include source/licenses, but the aggregate bundle contains plugins and cached texture data under multiple terms. Direct upstream retrieval preserves provenance while a file-level redistribution audit remains open.
