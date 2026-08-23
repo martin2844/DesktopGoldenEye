@@ -378,6 +378,74 @@ function Get-RomLaunchAlias {
     return $alias
 }
 
+function Initialize-QualityWindowInputCapture {
+    param([Parameter(Mandatory)][System.Diagnostics.Process]$Process)
+
+    if (-not ('GoldenEyeWindowCapture' -as [type])) {
+        Add-Type @'
+using System;
+using System.Runtime.InteropServices;
+
+public static class GoldenEyeWindowCapture
+{
+    [StructLayout(LayoutKind.Sequential)]
+    public struct POINT { public int X; public int Y; }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct RECT { public int Left; public int Top; public int Right; public int Bottom; }
+
+    [DllImport("user32.dll")]
+    public static extern bool GetClientRect(IntPtr window, out RECT rect);
+
+    [DllImport("user32.dll")]
+    public static extern bool ClientToScreen(IntPtr window, ref POINT point);
+
+    [DllImport("user32.dll")]
+    public static extern bool SetCursorPos(int x, int y);
+
+    [DllImport("user32.dll")]
+    public static extern bool SetForegroundWindow(IntPtr window);
+}
+'@
+    }
+
+    $deadline = [DateTime]::UtcNow.AddSeconds(10)
+    do {
+        if ($Process.HasExited) { throw '1964 exited before its game window was ready.' }
+        $Process.Refresh()
+        if ($Process.MainWindowHandle -ne [IntPtr]::Zero) { break }
+        Start-Sleep -Milliseconds 100
+    } while ([DateTime]::UtcNow -lt $deadline)
+
+    $window = $Process.MainWindowHandle
+    if ($window -eq [IntPtr]::Zero) { throw '1964 did not create a game window within 10 seconds.' }
+    try { [void]$Process.WaitForInputIdle(5000) } catch { }
+    $Process.Refresh()
+    $window = $Process.MainWindowHandle
+
+    $client = New-Object GoldenEyeWindowCapture+RECT
+    if (-not [GoldenEyeWindowCapture]::GetClientRect($window, [ref]$client)) {
+        throw 'Could not read the 1964 client area for windowed mouse capture.'
+    }
+
+    $center = New-Object GoldenEyeWindowCapture+POINT
+    $center.X = [math]::Floor(($client.Right - $client.Left) / 2)
+    $center.Y = [math]::Floor(($client.Bottom - $client.Top) / 2)
+    if (-not [GoldenEyeWindowCapture]::ClientToScreen($window, [ref]$center)) {
+        throw 'Could not translate the 1964 client center for windowed mouse capture.'
+    }
+
+    [void][GoldenEyeWindowCapture]::SetForegroundWindow($window)
+    if (-not [GoldenEyeWindowCapture]::SetCursorPos($center.X, $center.Y)) {
+        throw 'Could not center the pointer inside the 1964 game window.'
+    }
+
+    # Mouse Injector checks focus every 500 ms and records the current pointer
+    # location as its warp target. Keep the pointer centered through that poll.
+    Start-Sleep -Milliseconds 650
+    [void][GoldenEyeWindowCapture]::SetCursorPos($center.X, $center.Y)
+}
+
 function Start-QualityRuntime {
     param(
         [Parameter(Mandatory)][string]$InstallRoot,
@@ -412,6 +480,9 @@ function Start-QualityRuntime {
     )
     if ($Settings.displayMode -ne 'Windowed') { $arguments += '-f' }
     $process = Start-Process -FilePath (Join-Path $runtime '1964.exe') -WorkingDirectory $runtime -ArgumentList $arguments -PassThru
+    if ($Settings.displayMode -eq 'Windowed') {
+        Initialize-QualityWindowInputCapture -Process $process
+    }
     if ($Wait) { $process.WaitForExit() }
     return $process
 }

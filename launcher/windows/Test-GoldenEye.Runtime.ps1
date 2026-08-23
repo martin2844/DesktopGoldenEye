@@ -73,4 +73,85 @@ $parseErrors = $null
     if ($parseErrors.Count -gt 0) { throw "PowerShell parse failure in '$_': $($parseErrors[0].Message)" }
 }
 
-Write-Host "PASS: ROM verified as $($rom.Format); launcher, display profile, and Modern FPS controls are complete."
+if (-not ('GoldenEyeCaptureTestProbe' -as [type])) {
+    Add-Type @'
+using System;
+using System.Runtime.InteropServices;
+
+public static class GoldenEyeCaptureTestProbe
+{
+    [StructLayout(LayoutKind.Sequential)]
+    public struct POINT { public int X; public int Y; }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct RECT { public int Left; public int Top; public int Right; public int Bottom; }
+
+    [DllImport("user32.dll")]
+    public static extern bool GetCursorPos(out POINT point);
+
+    [DllImport("user32.dll")]
+    public static extern bool SetCursorPos(int x, int y);
+
+    [DllImport("user32.dll")]
+    public static extern bool GetClientRect(IntPtr window, out RECT rect);
+
+    [DllImport("user32.dll")]
+    public static extern bool ClientToScreen(IntPtr window, ref POINT point);
+
+    [DllImport("user32.dll")]
+    public static extern bool SetWindowPos(IntPtr window, IntPtr after, int x, int y, int width, int height, uint flags);
+}
+'@
+}
+
+$originalCursor = New-Object GoldenEyeCaptureTestProbe+POINT
+[void][GoldenEyeCaptureTestProbe]::GetCursorPos([ref]$originalCursor)
+$windowScript = @'
+Add-Type -AssemblyName System.Windows.Forms
+$form = New-Object System.Windows.Forms.Form
+$form.Text = 'GoldenEye capture regression probe'
+$form.StartPosition = [System.Windows.Forms.FormStartPosition]::Manual
+$form.Location = New-Object System.Drawing.Point(100, 100)
+$form.ClientSize = New-Object System.Drawing.Size(640, 480)
+[void][System.Windows.Forms.Application]::Run($form)
+'@
+$encodedWindowScript = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($windowScript))
+$probeProcess = Start-Process -FilePath (Join-Path $PSHOME 'powershell.exe') -ArgumentList @(
+    '-NoProfile', '-STA', '-EncodedCommand', $encodedWindowScript
+) -PassThru
+try {
+    $deadline = [DateTime]::UtcNow.AddSeconds(10)
+    do {
+        if ($probeProcess.HasExited) { throw 'Window capture test process exited before creating a window.' }
+        $probeProcess.Refresh()
+        if ($probeProcess.MainWindowHandle -ne [IntPtr]::Zero) { break }
+        Start-Sleep -Milliseconds 100
+    } while ([DateTime]::UtcNow -lt $deadline)
+    if ($probeProcess.MainWindowHandle -eq [IntPtr]::Zero) { throw 'Window capture test process did not create a window.' }
+
+    [void][GoldenEyeCaptureTestProbe]::SetWindowPos($probeProcess.MainWindowHandle, [IntPtr]::Zero, 100, 100, 640, 480, 0)
+    [void][GoldenEyeCaptureTestProbe]::SetCursorPos(2000, 1200)
+    & (Get-Module GoldenEye.Runtime) {
+        param($TargetProcess)
+        Initialize-QualityWindowInputCapture -Process $TargetProcess
+    } $probeProcess
+
+    $cursor = New-Object GoldenEyeCaptureTestProbe+POINT
+    $client = New-Object GoldenEyeCaptureTestProbe+RECT
+    $clientOrigin = New-Object GoldenEyeCaptureTestProbe+POINT
+    [void][GoldenEyeCaptureTestProbe]::GetCursorPos([ref]$cursor)
+    [void][GoldenEyeCaptureTestProbe]::GetClientRect($probeProcess.MainWindowHandle, [ref]$client)
+    [void][GoldenEyeCaptureTestProbe]::ClientToScreen($probeProcess.MainWindowHandle, [ref]$clientOrigin)
+    $insideClient = $cursor.X -ge $clientOrigin.X -and $cursor.X -lt ($clientOrigin.X + $client.Right) -and
+        $cursor.Y -ge $clientOrigin.Y -and $cursor.Y -lt ($clientOrigin.Y + $client.Bottom)
+    if (-not $insideClient) { throw 'Windowed input capture did not seed the cursor inside the game client area.' }
+}
+finally {
+    if ($null -ne $probeProcess -and -not $probeProcess.HasExited) {
+        Stop-Process -Id $probeProcess.Id -Force
+        Wait-Process -Id $probeProcess.Id -ErrorAction SilentlyContinue
+    }
+    [void][GoldenEyeCaptureTestProbe]::SetCursorPos($originalCursor.X, $originalCursor.Y)
+}
+
+Write-Host "PASS: ROM verified as $($rom.Format); launcher, Modern FPS controls, and windowed mouse capture are complete."
