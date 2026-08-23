@@ -1,0 +1,32 @@
+# tier 1 — static + unit (ROM-free, ~2 min)
+tools/fidelity/check_release_build.sh                        # D7: assert Release build BEFORE any sim-hash lane runs (else a Debug/stale binary false-reds them)
+ctest --test-dir build --output-on-failure -E "port_"        # all ROM-free lanes incl. fidelity_ledger_valid
+ctest --test-dir build --output-on-failure -R fidelity_hash_coverage
+tools/combat_route_contract_smoke.sh --gate                  # Task 1.1: combat/floor oracle schema+comparator contract (FID-0032)
+scripts/ci/check_sim_render_separation.sh
+scripts/ci/check_timing_lock.sh
+ctest --test-dir build --output-on-failure -R radial_deadzone      # FID-0015 movement-stick radial deadzone lane
+ctest --test-dir build --output-on-failure -R weapon_cycle_queue    # FID-0016 mouse-wheel notch queue/drain lane
+ctest --test-dir build --output-on-failure -R speedgraph_clamp      # FID-0017 speedgraphframes spike-clamp lane
+ctest --test-dir build --output-on-failure -R chrobj_detonate       # FID-0074 maybe_detonate_object gate/armour/salvage helpers (D1-D5, both flag sides)
+ctest --test-dir build --output-on-failure -R fidelity_asm_audit_valid  # Task 2.4 (FID-0042) ASM-audit queue schema+verdict integrity
+tools/fidelity/sense_rdp_sweep.sh --selftest                 # FID-0043 S3 RDP comparator self-test (ROM/ares-free; proves the native/ares RDP-config differ catches a seeded divergence)
+# tier 2 — runtime smokes (ROM-gated, serialized, ~30 min)
+ctest --test-dir build --output-on-failure -R "port_"        # validation smokes incl. oracle route contract
+tools/sim_invariance_gate.sh
+tools/uncap_purity_gate.sh --quick                           # Task 0.5: 0-tick purity, 3-level smoke
+# tier 3 — regression + endurance (ROM-gated, ~45 min)
+tools/regression_test.sh
+tools/renderer_parity_capture.sh --scene all
+tools/uncap_purity_gate.sh                                   # Task 0.5: 0-tick purity, full 20-level matrix
+tools/fidelity/tape_regression.sh                            # (Task 0.6) input-tape replay hash regression
+tools/fidelity/combat_route_capture_smoke.sh                 # FID-0054 combat-route determinism guard (also ctest port_combat_route_capture_smoke)
+tools/fidelity/ak47_fire_rate_capture_smoke.sh               # FID-0056/P1d full-auto fire-rate gun.c call-site gate (also ctest port_ak47_fire_rate_capture_smoke; --prove self-tests authentic!=legacy)
+tools/fidelity/gate_routes_smoke.sh                          # FID-0031/D4 ares-free hard gate: replays the paired determinism tape of every gate:true route (also ctest port_gate_routes_smoke)
+tools/fidelity/patrol_magic_profile_smoke.sh                 # FID-0014 faithful WAYMODE_MAGIC patrol pause/warp profile + GE007_NO_PATROL_MAGIC_FIX negative control (also ctest port_patrol_magic_profile_smoke)
+tools/fidelity/aspect_cull_coupling_smoke.sh                 # FID-0058 aspect->sim cull coupling: widen-OFF aspect-invariant + widen-ON divergence characterization
+tools/fidelity/sense_trace_sweep.sh --gate                   # Task 2.1 S1 trace ratchet (gate:true routes; SKIPs cleanly w/o ROM+ares)
+tools/fidelity/sense_pixel_sweep.sh --gate --strict-coverage # Task 2.2 S2 pixel ratchet (gate:true checkpoints; SKIPs cleanly w/o ROM+ares; strict-coverage: a 0-checkpoint sweep is exit 3, and verify_all pre-classifies that vacuity as a skip -> degraded, 2026-07-17) (also ctest port_pixel_oracle_sweep_gate)
+tools/fidelity/sense_rdp_sweep.sh --gate                     # FID-0043 S3 RDP native/ares command-stream differential (native ROM-gated, ares differential needs --ares-rdp-sidecar; SKIPs cleanly)
+# appended by later tasks:
+# tools/uncap_purity_gate.sh                                  (Task 0.5)
