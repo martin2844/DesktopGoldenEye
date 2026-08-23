@@ -63,14 +63,14 @@ Each decision that changes should preserve the old entry, add a superseding entr
 
 **Gate:** Phase 0 establishes which generated artifacts may be cached/distributed.
 
-## D-007 — Android is an early gate
+## D-007 — Android follows the desktop alpha
 
 **Status:** Accepted  
-**Decision:** perform a physical-device renderer/lifecycle spike after first desktop frames and before investing heavily in manager breadth.
+**Decision:** ship and stabilize the PC baseline, semantic mod slice, manager, and author loop before scheduling an Android renderer/lifecycle spike.
 
-**Why:** RT64 and runtime Android host work are incomplete. Assuming support would create the largest schedule surprise.
+**Why:** Android is a nice-to-have, while RT64 and runtime Android host work remain incomplete. It must not delay a useful PC port.
 
-**Fallback:** transparent desktop-first alpha with Android experimental or deferred.
+**Future gate:** a time-boxed physical-device Vulkan/lifecycle spike after the desktop alpha. Failure leaves Android deferred without changing the PC roadmap.
 
 ## D-008 — Desktop renderer
 
@@ -121,9 +121,9 @@ Each decision that changes should preserve the old entry, add a superseding entr
 ## D-014 — First supported platforms
 
 **Status:** Provisional  
-**Decision:** Windows x86-64 and Linux x86-64 desktop first; Android arm64 gated; macOS later if maintainership/signing is available.
+**Decision:** Windows x86-64 first, then Linux x86-64; Android arm64 and macOS are later optional targets.
 
-**Why:** matches current developer environment and upstream support evidence while keeping the desired Android target explicit.
+**Why:** GoldenRecomp's documented path currently provides Windows-only recomp binaries and a Visual Studio build. Reproduce that shortest path first, then remove Windows assumptions and qualify Linux. WSL remains useful for tooling and repository work, not the initial graphics qualification target.
 
 ## Open decisions and required evidence
 
@@ -131,10 +131,10 @@ Each decision that changes should preserve the old entry, add a superseding entr
 |---|---|---:|
 | static AOT versus live/local recomp artifacts | performance, package size, provenance, startup, platform support | M1/M2 |
 | exact N64ModernRuntime integration shape | spike of Lua custom content type and lifecycle | M5 |
-| Android renderer approach | physical Vulkan spike and patch estimate | M4 |
+| Android renderer approach | post-desktop physical Vulkan spike and patch estimate | optional M4 |
 | Lua state model per mod versus shared state/environments | isolation, memory, callback overhead measurements | M5 |
 | canonical schema format | C++/Python/Lua codegen prototype | M5 |
-| UI toolkit | desktop/Android host fit and controller/touch proof | M7 |
+| UI toolkit | Windows/Linux host fit and controller proof | M7 |
 | package signing/index trust | threat model and operational owner | M10 |
 | native extension ABI promise | real expert mods and upgrade cost | after beta |
 | Japanese/PAL ROM support | symbol/data differences and community demand | after M6 |

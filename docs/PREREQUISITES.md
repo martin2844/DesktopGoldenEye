@@ -16,7 +16,21 @@ Verify without uploading the ROM:
 sha1sum "/path/to/your/GoldenEye 007 (USA).z64"
 ```
 
+On Windows PowerShell:
+
+```powershell
+Get-FileHash -Algorithm SHA1 "C:\Games\ROMs\GoldenEye 007 (USA).z64"
+```
+
 The importer should eventually accept z64, n64, and v64 byte orders, but Phase 0 may normalize to big-endian z64 first. Do not place the ROM inside this Git repository. Japanese and PAL versions are later compatibility profiles, not interchangeable inputs.
+
+### When the ROM becomes necessary
+
+The ROM is not needed to install compilers, build N64Recomp and host tools, pin dependencies, audit provenance, or create the ROM-free mod-platform harness. It is needed for the first playable GoldenEye build.
+
+The current GoldenRecomp experiment expects a special TLB-free, decompressed ROM and matching ELF produced from its GoldenEye decompilation branch. Our intended GameImage Module will eventually generate all required private inputs from the user's ordinary verified ROM. Until that importer exists, the development baseline must perform the upstream transformation locally.
+
+Keep the ROM outside this repository—for example in a private Windows ROM directory—and provide only its local path. Do not upload it, send it through chat, or copy it into an issue or CI artifact. From WSL, a Windows file such as `C:\Games\ROMs\GoldenEye 007 (USA).z64` is normally visible below `/mnt/c/Games/ROMs/`. We will store any configured path only in ignored local configuration.
 
 ### Development hardware
 
@@ -24,12 +38,10 @@ Minimum practical starting setup:
 
 - x86-64 desktop with 16 GB RAM; 32 GB is comfortable for parallel C++ builds;
 - Vulkan-capable GPU and current drivers;
-- 30–50 GB free disk for upstream checkouts, symbols, native builds, Android SDK/NDK, and private imports;
-- one physical Android arm64 device, Android 10 or newer, with Vulkan 1.1;
-- a Bluetooth or USB controller recognized by both desktop and Android;
-- USB cable and developer-mode/USB-debugging access for device logs.
+- 20–30 GB free disk for upstream checkouts, symbols, native builds, and private imports;
+- a Bluetooth or USB controller recognized by Windows and Linux.
 
-For the Android renderer gate, test at least one Qualcomm/Adreno device and one ARM/Mali device before claiming broad support. A single emulator or phone is enough for the first spike, not for release qualification.
+Android hardware, SDK, NDK, JDK, and ADB are not required for the PC alpha. If the optional port begins later, test at least one Qualcomm/Adreno device and one ARM/Mali device before claiming broad support.
 
 ### Accounts and community access
 
@@ -59,7 +71,7 @@ Do not create organization, store, or signing commitments during Phase 0.
 - zlib and other libraries required by the pinned upstream build;
 - Git LFS only if original large test fixtures are later introduced—never for ROM data.
 
-### Android tools
+### Optional Android tools—install later
 
 Use a dedicated Android SDK location for WSL/Linux builds rather than mixing Windows and Linux tool paths.
 
@@ -133,7 +145,7 @@ pkg-config --modversion sdl2
 
 WSL graphics support depends on WSLg, Windows GPU drivers, and Vulkan translation support. If the native window/renderer behaves differently under WSL, build and test the Windows desktop Adapter natively rather than diagnosing WSL as though it were a release platform.
 
-## Suggested Android bootstrap
+## Optional Android bootstrap
 
 The least surprising route is Android Studio on the host for SDK/device management plus a deliberately configured Linux SDK in WSL for command-line builds. Avoid sharing binary NDK toolchains across operating systems.
 
@@ -185,13 +197,12 @@ The best learning order is CMake/C++ build → runnable desktop baseline → run
 - [ ] Upstream repositories and submodules clone successfully.
 - [ ] Selected upstream revision builds from a clean directory.
 - [ ] Controller and audio output work in that baseline.
-- [ ] At least one physical Android arm64 Vulkan device is available.
-- [ ] JDK, SDK, NDK, ADB, and device authorization work.
+- [ ] Optional, post-desktop: a physical Android arm64 Vulkan device and SDK/NDK toolchain are available.
 - [ ] Phase 0 provenance owner and evidence log are established.
 - [ ] No copyrighted game artifacts appear in `git status`.
 
 ## Time expectations
 
-For one experienced developer working part-time, this is a multi-month project, not a weekend port. A realistic first decision window is 2–4 weeks for desktop baseline and provenance evidence, followed by a 2–4 week Android renderer/lifecycle spike. The first genuinely friendly modding alpha is more plausibly 4–8 months part-time, depending mainly on baseline correctness and Android rendering. Community-grade breadth and polish can take 9–18 months.
+For one experienced developer working part-time, this is a multi-month project, not a weekend port. A realistic first decision window is 2–4 weeks for the Windows baseline and provenance evidence. The first genuinely friendly Windows/Linux modding alpha is more plausibly 4–8 months part-time, depending mainly on baseline correctness and Linux portability. A later Android renderer/lifecycle spike adds at least 2–4 weeks for a feasibility decision and substantially more for a supported product. Community-grade breadth and polish can take 9–18 months.
 
 These are planning ranges, not delivery promises. The roadmap is gated so the project can stop or narrow scope before investing in the expensive layers.

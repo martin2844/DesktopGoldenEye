@@ -65,7 +65,7 @@ Public integration tests combine the synthetic runtime, Lua, package loader, man
 - profile switch and safe-mode restore;
 - option/save migration across mod versions;
 - hot reload success and failure restore;
-- desktop and Android package parser equivalence.
+- Windows and Linux package parser equivalence; future Android must pass the same contract.
 
 Private integration tests repeat the key paths against the imported real game.
 
@@ -142,7 +142,7 @@ Collect:
 
 Budgets live in Architecture. CI should fail only on stable, calibrated benchmarks; noisy device benchmarks report trends and gates through qualification.
 
-## Android matrix
+## Optional future Android matrix
 
 Minimum engineering matrix:
 
@@ -227,7 +227,7 @@ A documentation example that cannot be tested should explain why.
 
 - clean-room build reproduction;
 - full desktop matrix;
-- physical Android matrix;
+- physical Android matrix only for an Android release candidate;
 - representative mission/replay suite;
 - no-mod parity;
 - import interruption/recovery;
@@ -260,8 +260,9 @@ Always block release for:
 3. import state-machine and data scan;
 4. timing/renderer representative private suite;
 5. one semantic weapon registry no-mod/mod parity test;
-6. Android lifecycle/input/renderer instrumentation;
+6. Windows/Linux host parity and package portability;
 7. manager/profile/package end-to-end;
 8. documentation/tool reproducibility;
 9. community format conversions;
-10. beta matrix and security hardening.
+10. beta matrix and security hardening;
+11. optional Android lifecycle/input/renderer instrumentation after desktop alpha.

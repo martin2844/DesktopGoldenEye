@@ -93,9 +93,9 @@ Every milestone has an exit gate. A milestone is not complete because code exist
 - no-mod replay/state assertions are stable enough to guard future hooks;
 - controller presets are usable.
 
-## M4 — Android feasibility and platform Adapter
+## Optional M4 — Android feasibility after desktop alpha
 
-**Purpose:** make an evidence-based Android decision early.
+**Purpose:** investigate the Android nice-to-have without blocking the PC critical path. Do not schedule this milestone until M1–M3 and the desktop portions of M5–M8 produce a useful alpha.
 
 **Work:**
 
@@ -116,7 +116,7 @@ Every milestone has an exit gate. A milestone is not complete because code exist
 - sustained performance has an honest supported profile;
 - renderer approach and maintenance cost are accepted.
 
-**Fallback gate:** formally declare desktop-first and keep Android experimental, with evidence and revisit condition.
+**Fallback gate:** keep Android deferred. M5 and later PC milestones never depend on this gate.
 
 ## M5 — Mod platform kernel
 
@@ -171,13 +171,13 @@ Every milestone has an exit gate. A milestone is not complete because code exist
 - Interface/lifecycle docs match executable tests;
 - feedback from at least three prospective modders is recorded.
 
-## M7 — Cross-platform player mod experience
+## M7 — Windows/Linux player mod experience
 
 **Purpose:** turn mod mechanics into a usable product.
 
 **Work:**
 
-- local `.gemod` import via desktop picker and Android intent;
+- local `.gemod` import via Windows and Linux desktop pickers;
 - catalog, enable/disable, order, profiles;
 - generated options UI and permissions;
 - dependency/conflict remediation;
@@ -188,11 +188,11 @@ Every milestone has an exit gate. A milestone is not complete because code exist
 
 **Exit gate:**
 
-- one exact Lua package checksum works on desktop and Android;
+- one exact Lua package checksum works on Windows and Linux;
 - broken profile recovery does not require deleting app data;
 - dependency and conflict UI explains causes;
 - profile/save mismatch is visible;
-- manager works by controller and touch for core operations;
+- manager works by mouse/keyboard and controller for core operations;
 - update never silently installs or expands permissions.
 
 ## M8 — Author toolchain, hot reload, and documentation
@@ -247,7 +247,7 @@ Every milestone has an exit gate. A milestone is not complete because code exist
 
 **Work:**
 
-- signed/checksummed desktop and Android artifacts;
+- signed/checksummed Windows and Linux artifacts; Android artifacts only if optional M4 has passed;
 - static/signed mod index and immutable package hashes;
 - moderation, ID ownership, takedown, and compromised-package process;
 - crash/update privacy policy;

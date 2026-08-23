@@ -5,7 +5,7 @@ Scale: probability and impact are Low/Medium/High. “Trigger” is the observab
 | ID | Risk | P | I | Mitigation / experiment | Trigger |
 |---|---|---:|---:|---|---|
 | R1 | GoldenEye decomp/generated artifacts have unclear redistribution provenance | High | High | M0 file-by-file inventory; conservative local generation; qualified legal review before release | cannot classify a required public artifact |
-| R2 | RT64 Android host is substantially unimplemented | High | High | early time-boxed Vulkan/physical-device M4 spike; upstream discussion; explicit desktop-first fallback | no representative frame/lifecycle proof within spike |
+| R2 | RT64 Android host is substantially unimplemented | High | Medium | defer until desktop alpha; later time-boxed Vulkan/physical-device spike; do not couple PC Interfaces to Android assumptions | no representative frame/lifecycle proof within optional spike |
 | R3 | GoldenRecomp baseline cannot complete missions reliably | Medium | High | M1 representative mission gate; compare alternate baseline; keep issue census before mod work | persistent blockers in Dam/later mission |
 | R4 | 60 fps presentation changes simulation behavior | High | High | separate clocks; weapon/AI/door/timer census; replay assertions at rates | state/event divergence by presentation rate |
 | R5 | custom GoldenEye graphics commands leave skybox/water/effects wrong | High | Medium | command trace and scene captures; upstreamable RT64 fixes; alpha scope disclosure only for nonblocking defects | mission clarity or completion affected |
@@ -38,9 +38,9 @@ Scale: probability and impact are Low/Medium/High. “Trigger” is the observab
 ## Top five immediate risks
 
 1. **R1 provenance:** determines whether a public binary/repository model is viable.
-2. **R2 Android renderer:** determines whether the original platform promise is credible.
-3. **R3 baseline correctness:** no mod platform can rescue a broken game.
-4. **R4 timing:** incorrect simulation would poison gameplay and mod contracts.
+2. **R3 baseline correctness:** no mod platform can rescue a broken game.
+3. **R4 timing:** incorrect simulation would poison gameplay and mod contracts.
+4. **R8 semantic stability:** brittle low-level Lua bindings would undermine the whole mod ecosystem.
 5. **R22 sustainability:** the architecture and release process must remain pet-project sized.
 
 Review these after every Phase 0/M1 experiment. Add evidence links and change probability rather than merely marking them “handled.”

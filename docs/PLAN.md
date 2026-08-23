@@ -6,8 +6,8 @@ Build an unofficial, cleanly distributed GoldenEye 007 mod platform where:
 
 - the player selects a legally obtained ordinary US N64 ROM;
 - import happens locally and produces a private, versioned GameInstall;
-- the native runtime plays reliably on desktop and Android;
-- the same Lua `.gemod` package works on both;
+- the native runtime plays reliably on Windows first and Linux next;
+- the Lua `.gemod` package is platform-neutral and works across supported PC builds;
 - a beginner makes a useful first mod in under 15 minutes;
 - advanced authors can use native N64Recomp mods without forcing that complexity on everyone;
 - the project collaborates with the existing GoldenEye ROM-hack community.
@@ -18,7 +18,7 @@ The shortest honest route is not “make a full mod SDK first.” It is:
 provenance + runnable game
 → direct-ROM product flow
 → timing/renderer correctness
-→ physical Android proof
+→ Windows/Linux product baseline
 → narrow semantic mod slice
 → manager and author tools
 → ecosystem breadth
@@ -30,7 +30,7 @@ provenance + runnable game
 
 - Clean install to first playable frame in under 10 minutes, excluding ROM acquisition.
 - Imported ROM never needs to remain accessible to the launcher.
-- Dam completion succeeds on supported desktop and Android hardware.
+- Dam completion succeeds on supported Windows and Linux PC builds.
 - Reference mod profile launches successfully at least 99% across automated stress runs.
 - A broken Lua mod yields an actionable diagnostic and safe-mode recovery, not a crash loop.
 - No-mod profile matches recorded vanilla state/replay assertions.
@@ -48,19 +48,19 @@ provenance + runnable game
 
 - Release source and launcher contain zero detected ROM/game-asset material.
 - Every dependency has a pinned revision, license/provenance status, and notice.
-- Desktop and Android Lua package hashes are identical.
+- Windows and Linux Lua package hashes are identical.
 - Release artifacts include checksums, build metadata, and a software bill of materials.
 - Public index packages state permissions and immutable hashes.
 
 ## Guiding decisions
 
-1. **C++20 is the product language.** It matches N64Recomp, N64ModernRuntime, RT64, platform tooling, performance, and Android NDK constraints.
+1. **C++20 is the product language.** It matches N64Recomp, N64ModernRuntime, RT64, platform tooling, and performance constraints.
 2. **Lua 5.4 is the default mod language.** It gives the short, reloadable author loop seen in Gen1Recomp.
-3. **Kotlin is only the Android Adapter.** It owns platform UX/lifecycle and delegates runtime logic to shared C++.
+3. **Windows is the first executable baseline.** The closest upstream path is already Visual Studio-oriented. Linux becomes the second PC Adapter after the baseline is reproducible.
 4. **Python owns author/build tools.** It is suitable for schemas, scaffolding, lint orchestration, deterministic packaging, and inspection.
 5. **Semantic Interfaces precede breadth.** One deep weapon registry is worth more than dozens of thin memory wrappers.
 6. **N64ModernRuntime machinery is reused.** The project adds a friendly layer rather than recreating dependency resolution, native hooks, and code-mod infrastructure.
-7. **Android is a gate.** It is tested early because current renderer/runtime support is incomplete.
+7. **Android is optional after desktop alpha.** Shared Interfaces stay portable, but Android cannot block the PC product.
 8. **Private import is a product feature.** Legal/provenance constraints shape architecture, CI, caching, and community tooling from day one.
 
 ## Critical path
@@ -70,7 +70,6 @@ M0 provenance/upstream gate
  └─ M1 reproducible desktop baseline
      └─ M2 direct-ROM private installer
          └─ M3 correctness/timing baseline
-             ├─ M4 Android feasibility
              └─ M5 mod kernel
                   └─ M6 semantic vertical slice
                       ├─ M7 player manager/cross-platform package
@@ -79,7 +78,7 @@ M0 provenance/upstream gate
                                └─ M10 beta/community release
 ```
 
-M4 should begin as soon as M1 can present frames; it may overlap M2/M3 research. M5 may prototype against a synthetic host before game hooks stabilize, but no public Interface freezes until M3.
+M5 may prototype against a synthetic host before game hooks stabilize, but no public Interface freezes until M3. Optional M4 begins only after a useful desktop alpha unless a contributor independently owns it.
 
 ## Work streams
 
@@ -110,19 +109,18 @@ Deliverables:
 
 Keep this work below the GameRuntime and GameImage Interfaces.
 
-### C. Android host and renderer
+### C. PC platform hosts
 
 Deliverables:
 
-- arm64 Gradle/NDK build;
-- Kotlin/JNI lifecycle Adapter;
-- Vulkan surface and renderer decision;
-- Storage Access Framework import;
-- controller and optional touch mapping;
-- audio focus, suspend/resume, process recreation, thermal/performance profiles;
-- physical-device matrix and diagnostic bundle.
+- reproducible native Windows x86-64 build using the closest supported upstream route;
+- Windows file picker, controller, audio, save, window/fullscreen, logging, and crash diagnostics;
+- removal or isolation of Windows-only assumptions;
+- Linux x86-64 build and desktop Adapter;
+- identical GameImage, GameRuntime, ModPlatform, packages, saves, and replay contracts on both;
+- per-platform package, controller, filesystem, and renderer qualification.
 
-This stream has a hard feasibility checkpoint. Desktop-first is an explicit fallback, not an unspoken failure.
+A later optional Android stream may add Kotlin/JNI, Vulkan surface, Storage Access Framework, controller/touch, audio focus, and lifecycle behavior. It begins only after the desktop alpha.
 
 ### D. Mod platform kernel
 
@@ -162,7 +160,7 @@ Deliverables:
 - first-run ROM picker/import progress/error recovery;
 - installed mod catalog and profile manager;
 - enable/disable/order/options/permissions;
-- ZIP install on desktop and Android;
+- ZIP install on Windows and Linux;
 - safe mode and crash recovery;
 - update/catalog metadata;
 - diagnostic export with privacy scrub;
@@ -196,12 +194,12 @@ Indicative effort for one experienced developer, part-time:
 |---|---:|---|
 | M0–M1 feasibility and desktop baseline | 2–4 weeks | upstream build/provenance |
 | M2–M3 import and game correctness | 3–8 weeks | transformed input, renderer/timing gaps |
-| M4 Android spike | 2–4 weeks for decision; longer for product | RT64/platform port |
+| Optional M4 Android spike after desktop alpha | 2–4 weeks for decision; longer for product | RT64/platform port |
 | M5–M6 mod kernel and semantic slice | 5–10 weeks | bridge stability and schemas |
 | M7–M8 manager and author experience | 5–10 weeks | cross-platform UX/tool polish |
 | M9–M10 ecosystem beta | 4–12 weeks | community formats, release hardening |
 
-Total to a narrow, genuinely pleasant alpha: roughly 4–8 months part-time if M0/M4 pass. Community-grade beta: roughly 9–18 months. A newcomer learning N64 internals and Vulkan should expect more. Estimates exclude a major renderer rewrite or legal redesign.
+Total to a narrow, genuinely pleasant Windows/Linux alpha: roughly 4–8 months part-time if M0/M1 pass. Community-grade beta: roughly 9–18 months. A newcomer learning N64 internals and Vulkan should expect more. Estimates exclude a major renderer rewrite, optional Android port, or legal redesign.
 
 ## First two weeks
 
@@ -246,13 +244,13 @@ Total to a narrow, genuinely pleasant alpha: roughly 4–8 months part-time if M
 - Bind that single semantic operation to the traced game behavior.
 - Measure overhead and confirm disabling it restores baseline.
 
-### Days 13–14: Android feasibility kickoff and review
+### Days 13–14: first semantic mod proof and review
 
-- Build a minimal arm64 Kotlin/JNI/Vulkan surface probe.
-- Route lifecycle/input logs into shared C++.
-- Attempt the renderer host path and inventory compile/runtime blockers.
-- Run on one physical device.
-- Review all gates, update risks, and decide the next two-week slice.
+- Embed Lua 5.4 in a synthetic harness.
+- Load one manifest and one transactional weapon patch.
+- Connect that patch to one traced GoldenEye behavior only if the vanilla baseline is stable.
+- Rebuild from a clean Windows directory and capture every manual prerequisite.
+- Review all gates, update risks, and decide the next PC-focused two-week slice.
 
 A slower desktop build should not be hidden by starting lots of launcher UI. If M1 is not reproducible, remain in M1.
 
@@ -264,7 +262,7 @@ Private/local only. Normal ROM import may be command-line. One mission and one s
 
 ### Technical alpha
 
-Desktop binaries for a small tester group. Direct ROM picker, local mods, safe diagnostics, frozen package format only if evidence supports it. Android may remain an experimental APK.
+Windows binaries for a small tester group, followed by Linux when qualified. Direct ROM picker, local mods, safe diagnostics, and a frozen package format only if evidence supports it. Android is out of scope at this stage.
 
 ### Modder alpha
 
@@ -272,7 +270,7 @@ Stable Lua Interface slice, author CLI, examples/tutorials, profiles, package im
 
 ### Public beta
 
-Supported desktop and Android matrix, recovery, signed/checksummed releases, public index, moderation/takedown path, compatibility policy, crash diagnostics, and a representative mod catalog.
+Supported Windows/Linux matrix, recovery, signed/checksummed releases, public index, moderation/takedown path, compatibility policy, crash diagnostics, and a representative mod catalog. Android has its own later qualification stage if pursued.
 
 ### 1.0
 
@@ -287,7 +285,7 @@ Interface stability policy, migration window, upgrade tests, complete notices/pr
 - Label experimental Interfaces clearly.
 - Showcase small original mods and accessibility improvements.
 - Offer conversion tools where formats are understood and legal, not proprietary lock-in.
-- Create issue templates for runtime bug, mod Interface request, Android device report, and package-index review.
+- Create issue templates for runtime bug, mod Interface request, package-index review, and—only if that port starts—Android device reports.
 - Establish a code of conduct and moderation/takedown workflow before opening the package index.
 
 ## Decision and stopping rules
@@ -297,12 +295,12 @@ Pause or narrow the project when:
 - provenance review cannot support the intended public artifact;
 - ordinary-ROM local import cannot be made reliable;
 - the baseline cannot complete representative missions after a bounded M1/M3 effort;
-- Android rendering requires an unmaintainable permanent fork and desktop-first no longer feels worthwhile;
+- the Windows baseline cannot be made reproducible or the Linux port would require an unmaintainable permanent fork;
 - Lua semantic hooks measurably destabilize simulation without a safer bridge;
 - maintenance cost exceeds the pet-project goal.
 
-A failed gate is useful evidence. The fallback order is: narrow Android promise → desktop-first alpha → reconsider renderer/runtime baseline → stop public distribution but keep research notes.
+A failed gate is useful evidence. The fallback order is: Windows-only developer alpha → reconsider renderer/runtime baseline → stop public distribution but keep research notes. Android remains independently optional.
 
 ## Overall definition of done
 
-The project has fulfilled its original promise when a new player can install an asset-free desktop or Android build, select their own verified ROM, play GoldenEye, install the same safe Lua mod package on either platform, manage profiles and errors, and follow tested documentation to create a mod quickly—while native experts retain a deeper extension lane and public artifacts remain provenance-clean.
+The project has fulfilled its primary promise when a new player can install an asset-free Windows or Linux build, select their own verified ROM, play GoldenEye, install a safe portable Lua mod package, manage profiles and errors, and follow tested documentation to create a mod quickly—while native experts retain a deeper extension lane and public artifacts remain provenance-clean. Android is a later bonus milestone.

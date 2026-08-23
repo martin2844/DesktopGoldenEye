@@ -13,7 +13,7 @@ user ROM
 GameImage.import ──► private GameInstall
                             │
                             ▼
-desktop/Android Adapter ─► GameRuntime ─► Renderer
+Windows/Linux Adapter ──► GameRuntime ─► Renderer
                             │
                             ▼
                        ModPlatform
@@ -35,7 +35,7 @@ This project uses these terms precisely:
 - **Implementation:** decisions hidden inside a Module.
 - **Depth:** how much complexity an Interface hides relative to its size.
 - **Seam:** the intentional meeting point between Modules.
-- **Adapter:** translation at a real Seam, such as desktop and Android lifecycle integration.
+- **Adapter:** translation at a real Seam, such as Windows and Linux desktop host integration.
 - **Leverage:** how much useful behavior one Interface operation provides.
 - **Locality:** keeping related knowledge and change together.
 
@@ -138,15 +138,15 @@ Raw memory access is not part of the stable Lua Interface. A quarantined experim
 
 ### 6. PlatformHost
 
-**Responsibility:** adapt the runtime to real desktop and Android platform lifecycles.
+**Responsibility:** adapt the runtime to Windows and Linux desktop hosts first, with Android only as a later optional Adapter.
 
-The desktop Adapter owns windows, controllers, filesystem dialogs, clipboard, logging, and shutdown. The Android Adapter owns Activity/NativeActivity lifecycle, Storage Access Framework ROM selection, controller and touch input, audio focus, suspend/resume, thermal state, and process recreation. Both meet the runtime at one real Seam.
+The initial Windows Adapter owns windows, controllers, filesystem dialogs, clipboard, logging, and shutdown. The Linux Adapter must meet GameRuntime at the same real Seam without changing game or mod semantics. A future Android Adapter may own Activity lifecycle, Storage Access Framework ROM selection, controller/touch input, audio focus, suspend/resume, thermal state, and process recreation.
 
 Kotlin should stay thin: permissions, file picker, settings screens, and lifecycle forwarding. Gameplay behavior belongs in shared C++.
 
 ### 7. RendererHost
 
-Desktop initially uses RT64 through its existing host integration. Android is not treated as another compile flag: current upstream contains explicitly unimplemented Android window paths. Phase 0 must compare:
+Desktop initially uses RT64 through its existing host integration. Windows is qualified first, followed by Linux. If the optional Android port begins later, it is not treated as another compile flag: current upstream contains explicitly unimplemented Android window paths. That future spike must compare:
 
 1. completing the RT64 Vulkan Android Adapter;
 2. isolating RT64's renderer from its desktop window assumptions;
@@ -288,7 +288,7 @@ Initial targets, to validate rather than promise:
 | Cold launch after import | under 5 seconds | under 8 seconds |
 | Import recovery | atomic; no corrupt install after termination | same |
 
-The Android gate must include Snapdragon/Adreno and ARM/Mali hardware. Emulator-only results do not qualify.
+Any later Android qualification must include Snapdragon/Adreno and ARM/Mali hardware. Emulator-only results do not qualify.
 
 ## Architectural definition of done
 
@@ -298,9 +298,9 @@ The architecture is validated when:
 - a player can select a normal supported ROM and later launch without reselecting it;
 - the launcher and public repository contain no game data;
 - Dam can be completed with no mods and with a simple Lua mod;
-- the same mod archive works on desktop and a physical Android device;
+- the same mod archive works on Windows and Linux;
 - disabling all mods restores byte/behavior-level equivalence for tested state;
 - dependency conflicts and Lua errors produce actionable diagnostics;
 - public Interfaces are documented, schema-validated, and covered by compatibility tests;
-- Android lifecycle, controller, audio focus, and storage tests pass;
+- the optional Android lifecycle/controller/audio/storage suite passes before any Android support claim;
 - the provenance review allows the intended distribution artifact.

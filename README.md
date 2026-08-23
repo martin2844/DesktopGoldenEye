@@ -1,12 +1,12 @@
 # GoldenEye Mod Platform
 
-An unofficial pet-project plan for a native GoldenEye 007 runtime with a Gen1Recomp-style modding experience on desktop and Android.
+An unofficial pet-project plan for a native GoldenEye 007 PC runtime with a Gen1Recomp-style modding experience. Android is a later nice-to-have.
 
 > Status: planning and feasibility only. No game code, ROM data, or playable build is included.
 
 ## Product promise
 
-A player supplies a legally obtained GoldenEye 007 US ROM. The launcher verifies it, creates a private local game install, and runs it natively. The same `.gemod` package should install on desktop and Android. A new modder should be able to scaffold, run, validate, and package a Lua mod in under 15 minutes without knowing N64 memory addresses.
+A player supplies a legally obtained GoldenEye 007 US ROM. The launcher verifies it, creates a private local game install, and runs it natively on PC. The `.gemod` format remains platform-neutral so a future Android port can consume the same Lua packages. A new modder should be able to scaffold, run, validate, and package a Lua mod in under 15 minutes without knowing N64 memory addresses.
 
 The project deliberately separates two lanes:
 
@@ -20,8 +20,9 @@ The project deliberately separates two lanes:
 - GoldenRecomp and the GoldenEye decompilation as research inputs, subject to provenance and redistribution review.
 - Standard Lua 5.4 embedded as the friendly authoring language.
 - RT64 on supported desktop platforms.
-- A thin Kotlin Android shell; Android rendering remains a Phase 0 feasibility gate.
-- CMake and Ninja for native builds; Gradle for Android packaging; Python for author tools and code generation.
+- Windows x86-64 first because the closest GoldenRecomp build path is currently Visual Studio/Windows-oriented; Linux x86-64 follows once the baseline is understood.
+- A future thin Kotlin Android shell only after the desktop alpha is healthy.
+- CMake and Ninja for native builds; Python for author tools and code generation.
 
 This is not a commitment to fork one upstream unchanged. The first milestone must prove that the selected baseline is reproducible, redistributable, and capable of completing real missions before public interfaces are frozen.
 
@@ -52,7 +53,7 @@ This is not a commitment to fork one upstream unchanged. The first milestone mus
 
 - Shipping a ROM, extracted assets, proprietary SDK code, or copyrighted game data.
 - Treating an emulator configuration as the final product.
-- Claiming Android support before a physical-device renderer and lifecycle spike passes.
+- Making Android support a blocker for the PC alpha.
 - Exposing raw RDRAM offsets as the primary public mod interface.
 - Promising online multiplayer in the initial release.
 - Recreating every Gen1Recomp feature before one useful end-to-end mod works.

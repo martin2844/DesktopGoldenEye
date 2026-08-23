@@ -6,7 +6,7 @@ The default modding experience should feel closer to Gen1Recomp than to reverse 
 
 ```text
 new project → edit Lua → run immediately → see attributed errors
-→ validate → package one ZIP → install on desktop or Android
+→ validate → package one ZIP → install on Windows or Linux
 ```
 
 A mod author should not need to build the runtime, link C++, calculate RDRAM addresses, or redistribute a modified ROM. Native recomp mods remain available for experts, but they are not the teaching path.
@@ -220,7 +220,7 @@ It should reject an archive that resembles a ROM or exceeds declared asset const
 
 Native mods use the pinned N64ModernRuntime/N64Recomp facilities for code patches, symbol hooks, and new compiled behavior. They declare `native_code`, exact ABI compatibility, architecture artifacts, and platform support.
 
-A native package may expose a safe operation to Lua through a registered extension Interface. It must not replace the standard `mod` root or make all Lua packages native-dependent. Android requires arm64 code and stricter packaging; a desktop-only native mod is visibly incompatible rather than failing at load.
+A native package may expose a safe operation to Lua through a registered extension Interface. It must not replace the standard `mod` root or make all Lua packages native-dependent. A future Android port would require arm64 code and stricter packaging; a PC-only native mod must then be visibly incompatible rather than failing at load.
 
 ## Author tool
 
@@ -275,7 +275,7 @@ The in-app manager should support:
 - one-click disable of the last changed mod set;
 - import/export of a profile without bundled game data.
 
-Desktop and Android consume identical Lua packages. Native packages declare platform artifacts.
+Windows and Linux consume identical Lua packages. A future Android port must consume that same Lua package format. Native packages declare platform artifacts.
 
 ## Community index
 
@@ -314,7 +314,7 @@ Every tutorial is a complete example package run in CI against a synthetic harne
 ## Mod-platform definition of done
 
 - First Lua mod from scaffold to visible result in under 15 minutes.
-- One package installs unchanged on desktop and Android.
+- One package installs unchanged on Windows and Linux; the format remains suitable for future Android.
 - No raw memory address appears in beginner docs.
 - Failed setup rolls back without corrupting the next launch.
 - Conflicts identify fields and owning mods.

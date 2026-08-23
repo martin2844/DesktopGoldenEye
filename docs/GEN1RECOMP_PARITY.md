@@ -14,8 +14,8 @@ Gen1Recomp is a product and workflow reference, not a source dependency.
 | Private data import/cache | atomic private GameInstall | M2 | interrupted import recovery; repository scan |
 | Launcher no longer needs ROM path | launch from versioned private install | M2 | move source ROM; launch still succeeds |
 | Desktop packages | Windows/Linux first, macOS after baseline | M1/M7 | signed/checksummed artifacts and smoke tests |
-| Android APK | physical arm64 Android app | M4/M7 | Adreno and Mali device runs |
-| Same gameplay/content mods across platforms | identical Lua `.gemod` | M7 | same checksum installed on desktop/Android |
+| Android APK | optional post-desktop arm64 port | optional M4 | Adreno and Mali device runs before support claim |
+| Portable gameplay/content mods | platform-neutral Lua `.gemod` | M7 | same package works on Windows/Linux; future Android consumes it unchanged |
 | In-app mod manager | install, enable, disable, order, inspect | M7 | automated UI/state tests |
 | Profiles | isolated enabled sets and order | M7 | switch and restore tests |
 | ZIP import | local picker/share import | M7 | malformed/safe archive test corpus |
@@ -86,7 +86,7 @@ Gen1Recomp can establish a newer mod package culture. GoldenEye already has Setu
 
 ### Gen1Recomp-shaped beta
 
-Add Android, profiles, manager, options, storage/save migrations, asset transforms, hot reload, console, tutorials, catalog updates, robust safe mode, and broader registries.
+Add Windows/Linux releases, profiles, manager, options, storage/save migrations, asset transforms, hot reload, console, tutorials, catalog updates, robust safe mode, and broader registries. Android is a separate later port, not a beta requirement.
 
 ### Later ecosystem depth
 
