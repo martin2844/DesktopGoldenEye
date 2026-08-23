@@ -19,6 +19,7 @@ $required = @(
     '1964\plugin\GLideN64.dll',
     '1964\plugin\Mouse_Injector.dll',
     'launcher\GoldenEye.ps1',
+    'launcher\GoldenEye.Launcher.ps1',
     'launcher\GoldenEye.Runtime.psm1',
     'Play GoldenEye (Quality).cmd',
     'launcher-state.json'
@@ -40,4 +41,36 @@ $videoConfig = Get-Content -LiteralPath (Join-Path $InstallRoot '1964\plugin\GLi
 }
 if ($videoConfig -match '@[A-Z_]+@') { throw 'GLideN64 quality profile contains an unresolved template token.' }
 
-Write-Host "PASS: ROM verified as $($rom.Format); quality runtime and launcher profile are complete."
+$settings = Get-GoldenEyeLauncherSettings -InstallRoot $InstallRoot
+if ($settings.schemaVersion -ne 2 -or $settings.controlPreset -ne 'ModernFPS') {
+    throw 'Launcher state did not migrate to the Modern FPS schema.'
+}
+
+$mouseProfile = @(Get-Content -LiteralPath (Join-Path $InstallRoot '1964\plugin\mouseinjector.ini') | ForEach-Object { [int]$_ })
+if ($mouseProfile.Count -ne 192) { throw 'Mouse Injector profile line count changed unexpectedly.' }
+$expectedMouseValues = [ordered]@{
+    144 = 1  # WASD
+    146 = 0  # acceleration off
+    147 = 0  # no independent weapon/crosshair drift
+    150 = 0  # no cursor/edge-scroll aiming
+    187 = 1  # centered crosshair visible
+    189 = 1  # automatic mouse capture
+    190 = 1  # release capture when focus is lost
+}
+foreach ($entry in $expectedMouseValues.GetEnumerator()) {
+    if ($mouseProfile[[int]$entry.Key] -ne [int]$entry.Value) {
+        throw "Modern FPS profile mismatch at Mouse Injector index $($entry.Key)."
+    }
+}
+
+$parseErrors = $null
+@(
+    (Join-Path $PSScriptRoot 'GoldenEye.ps1'),
+    (Join-Path $PSScriptRoot 'GoldenEye.Launcher.ps1'),
+    (Join-Path $PSScriptRoot 'GoldenEye.Runtime.psm1')
+) | ForEach-Object {
+    [void][System.Management.Automation.Language.Parser]::ParseFile($_, [ref]$null, [ref]$parseErrors)
+    if ($parseErrors.Count -gt 0) { throw "PowerShell parse failure in '$_': $($parseErrors[0].Message)" }
+}
+
+Write-Host "PASS: ROM verified as $($rom.Format); launcher, display profile, and Modern FPS controls are complete."

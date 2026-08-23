@@ -127,10 +127,167 @@ function Copy-LauncherFiles {
     $destinationRoot = [System.IO.Path]::GetFullPath($destination).TrimEnd('\')
     if ($sourceRoot -ne $destinationRoot) {
         Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'GoldenEye.ps1') -Destination $destination -Force
+        Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'GoldenEye.Launcher.ps1') -Destination $destination -Force
         Copy-Item -LiteralPath $PSCommandPath -Destination $destination -Force
         Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Test-GoldenEye.Runtime.ps1') -Destination $destination -Force
         Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'adapters') -Destination $destination -Recurse -Force
     }
+}
+
+function Get-PrimaryDisplaySize {
+    $width = 1920
+    $height = 1080
+    try {
+        Add-Type -AssemblyName System.Windows.Forms
+        $width = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds.Width
+        $height = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds.Height
+    }
+    catch {
+        Write-Warning 'Could not query the primary display; using 1920x1080.'
+    }
+    [pscustomobject]@{ Width = $width; Height = $height }
+}
+
+function Get-GoldenEyeLauncherSettings {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$InstallRoot,
+        [string]$RomPath
+    )
+
+    $display = Get-PrimaryDisplaySize
+    $settings = [ordered]@{
+        schemaVersion = 2
+        romPath = $RomPath
+        preferredRuntime = 'Quality'
+        displayMode = 'Fullscreen'
+        fullscreenWidth = $display.Width
+        fullscreenHeight = $display.Height
+        windowedWidth = 1280
+        windowedHeight = 720
+        verticalSync = $false
+        controlPreset = 'ModernFPS'
+        mouseSensitivityPercent = 100
+        mouseAcceleration = $false
+        invertMouseY = $false
+        fieldOfView = 60
+    }
+
+    $statePath = Join-Path $InstallRoot 'launcher-state.json'
+    if (Test-Path -LiteralPath $statePath -PathType Leaf) {
+        $saved = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json
+        foreach ($name in @($settings.Keys)) {
+            $property = $saved.PSObject.Properties[$name]
+            if ($null -ne $property -and $null -ne $property.Value) {
+                $settings[$name] = $property.Value
+            }
+        }
+    }
+    if ($RomPath) { $settings.romPath = $RomPath }
+    [pscustomobject]$settings
+}
+
+function Save-GoldenEyeLauncherSettings {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$InstallRoot,
+        [Parameter(Mandatory)]$Settings
+    )
+
+    if (-not $Settings.romPath) { throw 'Choose your GoldenEye 007 US ROM before saving settings.' }
+    $rom = Get-GoldenEyeRomInfo -RomPath $Settings.romPath
+    if ($Settings.displayMode -notin @('Fullscreen', 'Borderless', 'Windowed')) {
+        throw "Unsupported display mode '$($Settings.displayMode)'."
+    }
+    if ($Settings.controlPreset -notin @('ModernFPS', 'Hybrid', 'ClassicInjector')) {
+        throw "Unsupported control preset '$($Settings.controlPreset)'."
+    }
+    foreach ($dimension in @('fullscreenWidth', 'fullscreenHeight', 'windowedWidth', 'windowedHeight')) {
+        if ([int]$Settings.$dimension -lt 320 -or [int]$Settings.$dimension -gt 16384) {
+            throw "Display dimension '$dimension' is outside the supported range."
+        }
+    }
+    if ([int]$Settings.mouseSensitivityPercent -lt 25 -or [int]$Settings.mouseSensitivityPercent -gt 500) {
+        throw 'Mouse sensitivity must be between 25% and 500%.'
+    }
+    if ([int]$Settings.fieldOfView -lt 45 -or [int]$Settings.fieldOfView -gt 120) {
+        throw 'Vertical field of view must be between 45 and 120 degrees.'
+    }
+
+    New-Item -ItemType Directory -Path $InstallRoot -Force | Out-Null
+    $normalized = [ordered]@{
+        schemaVersion = 2
+        romPath = $rom.Path
+        preferredRuntime = 'Quality'
+        displayMode = [string]$Settings.displayMode
+        fullscreenWidth = [int]$Settings.fullscreenWidth
+        fullscreenHeight = [int]$Settings.fullscreenHeight
+        windowedWidth = [int]$Settings.windowedWidth
+        windowedHeight = [int]$Settings.windowedHeight
+        verticalSync = [bool]$Settings.verticalSync
+        controlPreset = [string]$Settings.controlPreset
+        mouseSensitivityPercent = [int]$Settings.mouseSensitivityPercent
+        mouseAcceleration = [bool]$Settings.mouseAcceleration
+        invertMouseY = [bool]$Settings.invertMouseY
+        fieldOfView = [int]$Settings.fieldOfView
+    }
+    $normalized | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $InstallRoot 'launcher-state.json') -Encoding UTF8
+    [pscustomobject]$normalized
+}
+
+function Set-ConfigEntry {
+    param(
+        [Parameter(Mandatory)][string]$Content,
+        [Parameter(Mandatory)][string]$Key,
+        [Parameter(Mandatory)][string]$Value,
+        [Parameter(Mandatory)][string]$Separator
+    )
+    $pattern = '(?m)^' + [regex]::Escape($Key) + '.*$'
+    if (-not [regex]::IsMatch($Content, $pattern)) { throw "Configuration entry '$Key' was not found." }
+    [regex]::Replace($Content, $pattern, ($Key + $Separator + $Value), 1)
+}
+
+function Set-MouseInjectorProfile {
+    param(
+        [Parameter(Mandatory)][string]$Path,
+        [Parameter(Mandatory)]$Settings
+    )
+
+    $values = @(Get-Content -LiteralPath $Path | ForEach-Object { [int]$_ })
+    if ($values.Count -ne 192) { throw "Mouse Injector profile has $($values.Count) lines; expected 192." }
+
+    $values[144] = 1
+    $values[145] = [math]::Round([int]$Settings.mouseSensitivityPercent / 5)
+    $values[146] = if ([bool]$Settings.mouseAcceleration) { 1 } else { 0 }
+    $values[148] = if ([bool]$Settings.invertMouseY) { 1 } else { 0 }
+    $values[149] = 0
+
+    switch ([string]$Settings.controlPreset) {
+        'ModernFPS' {
+            $values[147] = 0
+            $values[150] = 0
+            $values[187] = 1
+        }
+        'Hybrid' {
+            $values[147] = 3
+            $values[150] = 0
+            $values[187] = 0
+        }
+        'ClassicInjector' {
+            $values[147] = 3
+            $values[150] = 1
+            $values[187] = 0
+        }
+    }
+
+    $values[184] = [int]$Settings.fieldOfView
+    $values[185] = 16
+    $values[186] = 9
+    $values[188] = 0
+    $values[189] = 1
+    $values[190] = 1
+    $values[191] = 52
+    Set-Content -LiteralPath $Path -Value $values -Encoding ASCII
 }
 
 function Set-QualityProfile {
@@ -157,20 +314,46 @@ function Set-QualityProfile {
         if ($Replace -and (Test-Path -LiteralPath $glideProfile) -and -not (Test-Path -LiteralPath "$glideProfile.user-backup")) {
             Copy-Item -LiteralPath $glideProfile -Destination "$glideProfile.user-backup"
         }
-        $width = 1920
-        $height = 1080
-        try {
-            Add-Type -AssemblyName System.Windows.Forms
-            $width = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds.Width
-            $height = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds.Height
-        }
-        catch {
-            Write-Warning 'Could not query the primary display; using a 1920x1080 fullscreen profile.'
-        }
+        $display = Get-PrimaryDisplaySize
         $glideTemplate = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'adapters\1964gepd\GLideN64-quality.ini.in') -Raw
-        $glideConfig = $glideTemplate.Replace('@FULLSCREEN_WIDTH@', $width).Replace('@FULLSCREEN_HEIGHT@', $height)
+        $glideConfig = $glideTemplate.Replace('@FULLSCREEN_WIDTH@', $display.Width).Replace('@FULLSCREEN_HEIGHT@', $display.Height)
         Set-Content -LiteralPath $glideProfile -Value $glideConfig -Encoding ASCII
     }
+}
+
+function Set-GoldenEyeRuntimeSettings {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$InstallRoot,
+        [Parameter(Mandatory)]$Settings
+    )
+
+    $rom = Get-GoldenEyeRomInfo -RomPath $Settings.romPath
+    Set-QualityProfile -InstallRoot $InstallRoot -RomInfo $rom
+
+    $runtimeConfigPath = Join-Path $InstallRoot '1964\1964.cfg'
+    $runtimeConfig = Get-Content -LiteralPath $runtimeConfigPath -Raw
+    $borderless = if ($Settings.displayMode -eq 'Borderless') { '1' } else { '0' }
+    $runtimeConfig = Set-ConfigEntry -Content $runtimeConfig -Key 'BorderlessFullscreen' -Value $borderless -Separator ' '
+    $runtimeConfig = Set-ConfigEntry -Content $runtimeConfig -Key 'ClientWindowWidth' -Value ([string][int]$Settings.windowedWidth) -Separator ' '
+    $runtimeConfig = Set-ConfigEntry -Content $runtimeConfig -Key 'ClientWindowHeight' -Value ([string][int]$Settings.windowedHeight) -Separator ' '
+    Set-Content -LiteralPath $runtimeConfigPath -Value $runtimeConfig -Encoding ASCII
+
+    $videoConfigPath = Join-Path $InstallRoot '1964\plugin\GLideN64.ini'
+    $videoConfig = Get-Content -LiteralPath $videoConfigPath -Raw
+    $entries = [ordered]@{
+        'video\fullscreenWidth' = [int]$Settings.fullscreenWidth
+        'video\fullscreenHeight' = [int]$Settings.fullscreenHeight
+        'video\windowedWidth' = [int]$Settings.windowedWidth
+        'video\windowedHeight' = [int]$Settings.windowedHeight
+        'video\verticalSync' = $(if ([bool]$Settings.verticalSync) { 1 } else { 0 })
+    }
+    foreach ($entry in $entries.GetEnumerator()) {
+        $videoConfig = Set-ConfigEntry -Content $videoConfig -Key $entry.Key -Value ([string]$entry.Value) -Separator '='
+    }
+    Set-Content -LiteralPath $videoConfigPath -Value $videoConfig -Encoding ASCII
+
+    Set-MouseInjectorProfile -Path (Join-Path $InstallRoot '1964\plugin\mouseinjector.ini') -Settings $Settings
 }
 
 function Get-RomLaunchAlias {
@@ -199,6 +382,7 @@ function Start-QualityRuntime {
     param(
         [Parameter(Mandatory)][string]$InstallRoot,
         [Parameter(Mandatory)]$RomInfo,
+        $Settings,
         [switch]$Windowed,
         [switch]$Wait
     )
@@ -206,7 +390,11 @@ function Start-QualityRuntime {
     if (-not (Test-QualityRuntime -InstallRoot $InstallRoot)) {
         throw "Quality runtime is not installed. Run Setup first."
     }
-    Set-QualityProfile -InstallRoot $InstallRoot -RomInfo $RomInfo
+    if ($null -eq $Settings) {
+        $Settings = Get-GoldenEyeLauncherSettings -InstallRoot $InstallRoot -RomPath $RomInfo.Path
+    }
+    if ($Windowed) { $Settings.displayMode = 'Windowed' }
+    Set-GoldenEyeRuntimeSettings -InstallRoot $InstallRoot -Settings $Settings
     $romAlias = Get-RomLaunchAlias -RomInfo $RomInfo
     $romDirectory = Split-Path -Parent $romAlias
     if ($romDirectory -match '\s') {
@@ -222,7 +410,7 @@ function Start-QualityRuntime {
         '-c', 'Mouse_Injector.dll',
         '-o', '9'
     )
-    if (-not $Windowed) { $arguments += '-f' }
+    if ($Settings.displayMode -ne 'Windowed') { $arguments += '-f' }
     $process = Start-Process -FilePath (Join-Path $runtime '1964.exe') -WorkingDirectory $runtime -ArgumentList $arguments -PassThru
     if ($Wait) { $process.WaitForExit() }
     return $process
@@ -258,6 +446,9 @@ function Install-GoldenEyeRuntime {
     $runtime = Install-QualityRuntime -InstallRoot $InstallRoot -BundlePath $BundlePath
     Copy-LauncherFiles -InstallRoot $InstallRoot
     Set-QualityProfile -InstallRoot $InstallRoot -RomInfo $rom -Replace
+    $settings = Get-GoldenEyeLauncherSettings -InstallRoot $InstallRoot -RomPath $rom.Path
+    $settings = Save-GoldenEyeLauncherSettings -InstallRoot $InstallRoot -Settings $settings
+    Set-GoldenEyeRuntimeSettings -InstallRoot $InstallRoot -Settings $settings
     [pscustomobject]@{ RuntimePath = $runtime; Rom = $rom; Release = $script:QualityRelease.Name }
 }
 
@@ -268,15 +459,16 @@ function Start-GoldenEyeRuntime {
         [Parameter(Mandatory)][string]$InstallRoot,
         [Parameter(Mandatory)][string]$RomPath,
         [string]$ExperimentalExecutable,
+        $Settings,
         [switch]$Windowed,
         [switch]$Wait
     )
     $rom = Get-GoldenEyeRomInfo -RomPath $RomPath
     if ($Runtime -eq 'Quality') {
-        return Start-QualityRuntime -InstallRoot $InstallRoot -RomInfo $rom -Windowed:$Windowed -Wait:$Wait
+        return Start-QualityRuntime -InstallRoot $InstallRoot -RomInfo $rom -Settings $Settings -Windowed:$Windowed -Wait:$Wait
     }
     if (-not $ExperimentalExecutable) { throw 'Experimental runtime requires -ExperimentalExecutable pointing to ge007.exe.' }
     return Start-ExperimentalRuntime -Executable $ExperimentalExecutable -RomInfo $rom -Wait:$Wait
 }
 
-Export-ModuleMember -Function Get-GoldenEyeRomInfo, Install-GoldenEyeRuntime, Start-GoldenEyeRuntime
+Export-ModuleMember -Function Get-GoldenEyeRomInfo, Get-GoldenEyeLauncherSettings, Save-GoldenEyeLauncherSettings, Set-GoldenEyeRuntimeSettings, Install-GoldenEyeRuntime, Start-GoldenEyeRuntime

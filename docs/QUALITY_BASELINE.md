@@ -31,7 +31,7 @@ The Windows setup Module:
 5. retains the upstream source archive and notices included in the bundle;
 6. installs a quality GLideN64 profile sized to the primary display;
 7. selects `Mouse_Injector.dll`, `AziAudio.dll`, and the latest bundled `GLideN64.dll`;
-8. creates a private launcher-state file containing the ROM path, never ROM bytes;
+8. creates a private launcher-state file containing the ROM path and display/input preferences, never ROM bytes;
 9. creates a no-space hard-link beside a space-containing ROM only because 1964's 2002-era command-line parser stops at whitespace.
 
 Pinned release evidence:
@@ -58,20 +58,23 @@ The default profile favors correctness and mouse latency:
 
 Native-resolution rendering supplies most of the image-quality gain on this game. Add driver-level anti-aliasing only after mouse feel is accepted. If tearing is objectionable, try driver-level frame limiting or V-sync last and retest latency.
 
+The launcher exposes fullscreen, borderless fullscreen, and windowed modes; native and common 16:9 resolutions; V-sync; vertical FOV; and the input controls below. It persists the selection and reapplies it immediately before every launch so plugin dialogs cannot silently become the source of truth.
+
 ## Mouse and WASD ownership
 
-The project did **not** write the quality runtime's mouse/WASD implementation. It comes from 1964GEPD's Mouse Injector 2.3 plugin and its game-specific GoldenEye memory hooks. The default profile uses:
+The project did **not** write the low-level mouse/WASD injection. It comes from 1964GEPD's Mouse Injector 2.3 plugin and its game-specific GoldenEye memory hooks. The launcher now owns the player-facing profile applied to that plugin. The default **Modern FPS** profile uses:
 
 - WASD movement;
-- mouse look;
+- direct mouse camera look in both hip-fire and right-click aim;
+- a centered weapon/crosshair instead of independent gun drift and edge-scrolling cursor aim;
 - left mouse fire, right mouse aim;
 - mouse wheel weapon change;
 - `R` reload, `E` use/cancel, `Q` accept/next weapon;
 - `Enter` start and `Ctrl` crouch;
 - `4` toggle mouse injection/cursor lock;
-- `Ctrl+I` input settings while windowed.
+- automatic mouse capture on focus, with `4` as the manual release/recapture key.
 
-The bundled default is 100% mouse sensitivity with acceleration off. These settings are stored in `1964/plugin/mouseinjector.ini`. Mouse feel must still receive a human play test; a process/render smoke cannot judge latency or preference.
+The default is 100% mouse sensitivity with acceleration off. The launcher also offers **GoldenEye hybrid** (direct camera plus floating weapon movement) and **Classic Mouse Injector** (upstream cursor/edge-scroll aim) for comparison. The generated values remain in `1964/plugin/mouseinjector.ini`; `Ctrl+I` can inspect the upstream dialog while windowed, but the launcher profile is reapplied on the next play. Mouse feel must still receive a human play test; a process/render smoke cannot judge latency or preference.
 
 ## Local ready-to-play build
 
@@ -81,7 +84,7 @@ On the current PC:
 C:\Users\martin\Source\goldeneye-mod-platform\ready-to-play\GoldenEye-Quality\Play GoldenEye (Quality).cmd
 ```
 
-Double-click that command for fullscreen play. The original ROM remains at `D:\Roms\007 - GoldenEye (USA).n64`. Because its filename contains spaces, setup created `D:\Roms\GoldenEye007USA.v64` as a second NTFS directory entry for the same 12 MiB file—not a copied ROM.
+Double-click that command to open the Q Branch launcher, choose display and control settings, and start the game. The original ROM remains at `D:\Roms\007 - GoldenEye (USA).n64`. Because its filename contains spaces, setup created `D:\Roms\GoldenEye007USA.v64` as a second NTFS directory entry for the same 12 MiB file—not a copied ROM.
 
 For setup from source:
 
