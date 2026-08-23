@@ -203,7 +203,7 @@ Total to a narrow, genuinely pleasant Windows/Linux alpha: roughly 4–8 months 
 
 ## First two weeks
 
-The original schedule below is preserved as the execution baseline. As of 2026-08-23, Days 1–10 are materially complete: the Windows toolchain is installed, MGB64 is pinned and vendored, the ordinary ROM validates, Dam renders, and the first Mods catalog panel plus ROM-free tests exist. The active work now begins at the Lua bridge proof, while provenance and second-machine reproduction continue in parallel.
+The original schedule below is preserved as the execution baseline. As of 2026-08-23, Days 1–12 are materially complete: the Windows toolchain is installed, MGB64 is pinned and vendored, the ordinary ROM validates, Dam renders, and the Mods panel transactionally loads isolated Lua packages through one semantic game operation. The active work now moves to a schema-backed weapon patch and no-mod parity, while provenance and second-machine reproduction continue in parallel.
 
 ### Days 1–2: establish evidence
 

@@ -12,6 +12,7 @@
 #include "diag_log.h"
 #include "engine_entry.h"
 #include "launch_intent.h"
+#include "mod_runtime.h"
 #include "ui_launcher.h"
 #include "ui_overlay.h"
 #include "update_check.h"
@@ -22,6 +23,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
+#include <vector>
 
 // savedirInit lives in the C engine (src/platform/savedir.c). Declared here so
 // the app shell can seed the save-dir singleton with its override BEFORE
@@ -47,6 +49,35 @@ static int updateCheckSelfTest(int argc, char **argv) {
         std::printf("[selftest] no banner\n");
     }
     return 0;
+}
+
+static bool loadMods(modplatform::ModSession &session, const std::string &root,
+                     const std::vector<std::string> &enabled) {
+    if (enabled.empty()) return true;
+    const modplatform::ModCatalog catalog = modplatform::scanCatalog(root);
+    const modplatform::ModLoadReport report = session.load(catalog, enabled);
+    for (const modplatform::ModProblem &problem : report.problems) {
+        std::fprintf(stderr, "[MOD] %s: %s\n", problem.path.c_str(), problem.message.c_str());
+    }
+    if (!report.ok()) return false;
+    std::fprintf(stderr, "[MOD] loaded %zu package%s from %s\n", report.loaded,
+                 report.loaded == 1 ? "" : "s", root.c_str());
+    return true;
+}
+
+static bool loadAllConfiguredMods(modplatform::ModSession &session) {
+    if (!std::getenv("MGB64_MODS_ENABLE_ALL")) return true;
+    const std::string root = modplatform::configuredModsRoot();
+    const modplatform::ModCatalog catalog = modplatform::scanCatalog(root);
+    if (!catalog.problems.empty()) {
+        for (const modplatform::ModProblem &problem : catalog.problems) {
+            std::fprintf(stderr, "[MOD] %s: %s\n", problem.path.c_str(), problem.message.c_str());
+        }
+        return false;
+    }
+    std::vector<std::string> enabled;
+    for (const modplatform::ModManifest &manifest : catalog.mods) enabled.push_back(manifest.id);
+    return loadMods(session, root, enabled);
 }
 
 int main(int argc, char **argv) {
@@ -173,7 +204,13 @@ int main(int argc, char **argv) {
     if (std::getenv("MGB64_APP_AUTOPLAY")) {
         // Isolate save state (MGB64_APP_SAVEDIR) so the validation boot never
         // pollutes the user's eeprom/ini or the byte-identity harness.
-        MgbBootConfig cfg = {nullptr, std::getenv("MGB64_APP_SAVEDIR"), -1, -1, 0, 0, -1};
+        modplatform::ModSession mods;
+        if (!loadAllConfiguredMods(mods)) {
+            host.shutdown();
+            return 1;
+        }
+        MgbBootConfig cfg = {std::getenv("MGB64_ROM"), std::getenv("MGB64_APP_SAVEDIR"),
+                             -1, -1, 0, 0, -1};
         cfg.level_slug = std::getenv("MGB64_APP_AUTOPLAY_LEVEL");  // exercises level boot
         int rc = play(cfg);
         host.shutdown();
@@ -213,6 +250,11 @@ int main(int argc, char **argv) {
     // into the game. ROM is taken from MGB64_ROM env (or engine auto-detection).
     // MGB64_PORTMASTER also gates the 640x480 fullscreen mode in platform_sdl.c.
     if (std::getenv("MGB64_PORTMASTER")) {
+        modplatform::ModSession mods;
+        if (!loadAllConfiguredMods(mods)) {
+            host.shutdown();
+            return 1;
+        }
         MgbBootConfig cfg = {std::getenv("MGB64_ROM"), std::getenv("MGB64_APP_SAVEDIR"),
                              -1, -1, 0, 0, -1, nullptr, 0};
         int rc = play(cfg);
@@ -247,7 +289,13 @@ int main(int argc, char **argv) {
         if (action.type == LauncherActionType::Quit) {
             running = false;
         } else if (action.type == LauncherActionType::Play) {
-            exitCode = play(action.boot);  // blocks; game renders into this window
+            modplatform::ModSession mods;
+            if (!loadMods(mods, action.modsRoot, action.enabledMods)) {
+                exitCode = 1;
+                running = false;
+                continue;
+            }
+            exitCode = play(action.boot);  // blocks; mods live for the full game session
             running = false;    // Task 9 adds return-to-launcher (re-exec)
         }
     }

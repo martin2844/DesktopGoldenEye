@@ -65,6 +65,8 @@ void PlayButton_draw(LauncherState &s, LauncherAction &out) {
         if (ui::PrimaryButton("Play", ui::kBtnPrimary())) {
             out.type = LauncherActionType::Play;
             out.boot.rom_path = s.romPath;  // stable: member of the Launcher's state
+            out.modsRoot = s.modsRoot;
+            out.enabledMods = s.enabledMods;
             fillBoot(s, out.boot);
         }
         ui::Gap(ui::kGapXS);

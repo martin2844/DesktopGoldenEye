@@ -96,7 +96,7 @@ LoadReport load(const Resolution&, GameRuntime&);
 void unload(GameRuntime&);
 ```
 
-Its Implementation begins as a focused C++17 Module inside MGB64's app shell. The first shipped Seam is already ROM-free: directory discovery and strict `manifest.toml` validation. It will add dependency resolution, isolated Lua entry chunks, schema-backed registries, profiles, permissions, rollback journals, scoped persistence, diagnostics, and cross-platform packages in that order.
+Its Implementation is a focused C++17 Module inside MGB64's app shell. The current ROM-free Seam includes directory discovery, strict `manifest.toml` validation, persisted explicit enable state, one isolated/bounded Lua state per mod, transactional rollback, and the first semantic operation (`game.unlock_all_levels`). It will add dependency resolution, schema-backed registries, broader permissions, scoped persistence, diagnostics, and cross-platform packages in that order.
 
 A failed mod load must either roll back all of that mod's registrations or fail the launch before gameplay. Partial mutation is not allowed.
 

@@ -40,6 +40,10 @@ bool parseManifest(const std::string &manifestPath, ModManifest &out, std::strin
 // root is an empty catalog, not an error; scanning never creates or edits files.
 ModCatalog scanCatalog(const std::string &root);
 
+// Environment override shared by the launcher and non-interactive smoke path.
+// Defaults to a `mods` directory beside the process working directory.
+std::string configuredModsRoot();
+
 }  // namespace modplatform
 
 #endif  // MGB64_MOD_CATALOG_H

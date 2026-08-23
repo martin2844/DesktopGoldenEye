@@ -1,5 +1,6 @@
 // ui_mods.cpp — launcher surface for local, asset-free mod packages.
 #include "ui_launcher.h"
+#include "app_config.h"
 #include "app_theme.h"
 #include "mod_catalog.h"
 #include "ui_common.h"
@@ -9,15 +10,35 @@
 
 #include <cstdlib>
 #include <filesystem>
+#include <algorithm>
 #include <string>
 
 namespace {
 
-std::string modsRoot() {
-    if (const char *configured = std::getenv("MGB64_MODS_DIR")) {
-        if (configured[0]) return configured;
+modplatform::ModCatalog gCatalog;
+
+bool isEnabled(const LauncherState &state, const std::string &id) {
+    return std::find(state.enabledMods.begin(), state.enabledMods.end(), id) != state.enabledMods.end();
+}
+
+void setEnabled(LauncherState &state, const std::string &id, bool enabled) {
+    auto found = std::find(state.enabledMods.begin(), state.enabledMods.end(), id);
+    if (enabled && found == state.enabledMods.end()) state.enabledMods.push_back(id);
+    if (!enabled && found != state.enabledMods.end()) state.enabledMods.erase(found);
+    AppConfig::set("mod_enabled." + id, enabled ? "1" : "0");
+    AppConfig::save();
+}
+
+void refreshCatalog(LauncherState &state, modplatform::ModCatalog &catalog) {
+    state.modsRoot = modplatform::configuredModsRoot();
+    catalog = modplatform::scanCatalog(state.modsRoot);
+    state.enabledMods.clear();
+    AppConfig::load();
+    const bool enableAll = std::getenv("MGB64_MODS_ENABLE_ALL") != nullptr;
+    for (const modplatform::ModManifest &mod : catalog.mods) {
+        if (enableAll || AppConfig::get("mod_enabled." + mod.id, "0") == "1")
+            state.enabledMods.push_back(mod.id);
     }
-    return "mods";
 }
 
 void openModsFolder(const std::string &root) {
@@ -34,26 +55,25 @@ void openModsFolder(const std::string &root) {
 
 }  // namespace
 
-void ModsPanel_draw(LauncherState & /*s*/, LauncherAction & /*out*/) {
-    static std::string root;
-    static modplatform::ModCatalog catalog;
-    static bool initialized = false;
-    if (!initialized) {
-        root = modsRoot();
-        catalog = modplatform::scanCatalog(root);
-        initialized = true;
-    }
+void ModsPanel_ensureInit(LauncherState &s) {
+    if (s.modsInitialized) return;
+    refreshCatalog(s, gCatalog);
+    s.modsInitialized = true;
+}
+
+void ModsPanel_draw(LauncherState &s, LauncherAction & /*out*/) {
+    ModsPanel_ensureInit(s);
+    modplatform::ModCatalog &catalog = gCatalog;
 
     ui::SectionHeader("Mods", "Discover local Lua packages now; sandboxed execution is the next milestone.");
-    if (ImGui::Button("Open Mods Folder", ui::kBtnSecondary())) openModsFolder(root);
+    if (ImGui::Button("Open Mods Folder", ui::kBtnSecondary())) openModsFolder(s.modsRoot);
     ImGui::SameLine();
     if (ImGui::Button("Refresh", ImVec2(120, ui::kBtnSecondary().y))) {
-        root = modsRoot();
-        catalog = modplatform::scanCatalog(root);
+        refreshCatalog(s, catalog);
     }
     ui::Gap(ui::kGapXS);
-    ui::TextSubtle("Folder: %s", root.c_str());
-    ui::TextSubtle("Safety gate: packages are validated and listed, but no mod code is executed in this build.");
+    ui::TextSubtle("Folder: %s", s.modsRoot.c_str());
+    ui::TextSubtle("Only checked packages execute when Play is pressed. Each receives an isolated, bounded Lua state.");
     ui::Gap(ui::kGapM);
 
     if (catalog.mods.empty() && catalog.problems.empty()) {
@@ -65,11 +85,15 @@ void ModsPanel_draw(LauncherState & /*s*/, LauncherAction & /*out*/) {
     for (size_t i = 0; i < catalog.mods.size(); ++i) {
         const modplatform::ModManifest &mod = catalog.mods[i];
         const std::string cardId = "##mod-" + std::to_string(i);
-        if (ui::CardBegin(cardId.c_str(), AppTheme::primary(), 116.0f)) {
+        if (ui::CardBegin(cardId.c_str(), AppTheme::primary(), 132.0f)) {
+            bool enabled = isEnabled(s, mod.id);
+            const std::string checkboxId = "Enabled##" + mod.id;
+            if (ImGui::Checkbox(checkboxId.c_str(), &enabled)) setEnabled(s, mod.id, enabled);
+            ImGui::SameLine();
             ImGui::Text("%s  v%s", mod.name.c_str(), mod.version.c_str());
             ImGui::SameLine();
             ImGui::PushStyleColor(ImGuiCol_Text, AppTheme::accent());
-            ImGui::TextUnformatted("Discovered");
+            ImGui::TextUnformatted(enabled ? "Ready" : "Disabled");
             ImGui::PopStyleColor();
             if (!mod.author.empty()) ui::TextSubtle("by %s  \xE2\x80\xA2  %s", mod.author.c_str(), mod.id.c_str());
             else ui::TextSubtle("%s", mod.id.c_str());

@@ -9,6 +9,7 @@
 #include "rom_validate.h"   // RomInfo
 
 #include <string>
+#include <vector>
 
 class AppHost;
 struct LaunchIntent;   // src/app/launch_intent.h (pure CLI parse result)
@@ -19,6 +20,8 @@ struct LauncherAction {
     LauncherActionType type = LauncherActionType::None;
     // Valid when type == Play. Defaults: auto-detect ROM, normal boot.
     MgbBootConfig boot = {nullptr, nullptr, -1, -1, 0, 0, -1};
+    std::string modsRoot;
+    std::vector<std::string> enabledMods;
 };
 
 // State shared across launcher panels.
@@ -41,6 +44,12 @@ struct LauncherState {
     char    advancedEnv[2048] = {0};
     bool    modesInitialized = false;
 
+    // Mod profile. Packages are disabled until the player explicitly enables
+    // them; the action snapshots these values when Play is pressed.
+    std::string modsRoot;
+    std::vector<std::string> enabledMods;
+    bool    modsInitialized = false;
+
     // A panel can request the shell switch tabs (e.g. the disabled-Play hint
     // jumping to Game ROM). -1 = no request; the shell consumes it after drawing.
     int     requestTab = -1;
@@ -55,6 +64,7 @@ void LaunchPanel_ensureInit(LauncherState &s);                  // load persiste
 void ModesPanel_draw(LauncherState &s, LauncherAction &out);
 void ModesPanel_ensureInit(LauncherState &s);                   // load persisted mode selections
 void ModsPanel_draw(LauncherState &s, LauncherAction &out);     // local package catalog
+void ModsPanel_ensureInit(LauncherState &s);                    // scan + load enabled profile
 void applyModeEnv(const LauncherState &s);                      // setenv hatches + advanced (on Play)
 void DiagPanel_draw(LauncherState &s, LauncherAction &out);     // diagnostics: log + export
 void BindingsPanel_draw(LauncherState &s, LauncherAction &out); // controls: rebind keyboard

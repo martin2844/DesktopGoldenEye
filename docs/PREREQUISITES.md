@@ -116,13 +116,15 @@ Python 3.13 is usable for many tools, but dependencies may lag it. Prefer a Pyth
 
 ### Windows host audit
 
-Windows command interop works and Windows Git is installed at `C:\Program Files\Git\cmd\git.exe`. Visual Studio 2022 Build Tools and the C++ workload are installed. The working MGB64 build uses MSYS2 MinGW64 with GCC 16.2, CMake 4.4.2, Ninja, SDL2, Git, Python/Pillow, pkg-config, and zip. MSVC remains useful for research but is not required for the selected runtime.
+Windows command interop works and Windows Git is installed at `C:\Program Files\Git\cmd\git.exe`. Visual Studio 2022 Build Tools and the C++ workload are installed. The working MGB64 build uses MSYS2 MinGW64 with GCC 16.2, CMake 4.4.2, Ninja, SDL2, Lua 5.5.1 (5.4-compatible author subset), Git, Python/Pillow, pkg-config, and zip. MSVC remains useful for research but is not required for the selected runtime.
 
 Run the reproducible workflow from the repository root:
 
 ```sh
 ./scripts/dev-windows.sh all
 ```
+
+The corresponding MSYS2 packages are installed in the MinGW64 environment; on another PC the relevant additions are `mingw-w64-x86_64-lua` and `zip` alongside the compiler/CMake/Ninja/SDL2 packages.
 
 ## Suggested Ubuntu/WSL desktop bootstrap
 

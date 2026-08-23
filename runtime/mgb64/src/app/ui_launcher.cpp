@@ -206,6 +206,7 @@ bool Launcher::seed(const LaunchIntent &intent, std::string &err) {
     RomPanel_ensureInit(state_);
     LaunchPanel_ensureInit(state_);
     ModesPanel_ensureInit(state_);
+    ModsPanel_ensureInit(state_);
 
     applyLaunchIntent(state_, intent);
 
@@ -249,6 +250,7 @@ LauncherAction Launcher::draw(AppHost &host) {
     RomPanel_ensureInit(state_);
     LaunchPanel_ensureInit(state_);
     ModesPanel_ensureInit(state_);
+    ModsPanel_ensureInit(state_);
 
     const ImGuiViewport *vp = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(vp->WorkPos);

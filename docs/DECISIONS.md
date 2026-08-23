@@ -169,3 +169,5 @@ Each decision that changes should preserve the old entry, add a superseding entr
 **Decision:** the launcher may list packages now, but it must state that scripts are not executed until Lua isolation, library removal, host API allowlisting, failure rollback, and no-mod parity tests land together.
 
 **Why:** silently executing a discovered `main.lua` would turn a useful catalog feature into arbitrary native-user process access.
+
+**Evidence:** the gate now passes with isolated 8 MiB states, a 250 ms setup hook, unsafe standard libraries removed, explicit launcher enable state, one allowlisted semantic operation, and rollback tests for runaway/missing packages and host-state restoration.

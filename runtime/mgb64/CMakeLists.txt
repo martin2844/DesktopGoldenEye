@@ -2322,6 +2322,8 @@ endif()
 if(MGB64_APP)
     set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/imgui)
     set(NFD_DIR   ${CMAKE_CURRENT_SOURCE_DIR}/lib/nfd)
+    find_package(Lua 5.4 REQUIRED)
+    message(STATUS "MGB64 mod platform: Lua ${LUA_VERSION_STRING}")
 
     set(IMGUI_SOURCES
         ${IMGUI_DIR}/imgui.cpp
@@ -2364,6 +2366,7 @@ if(MGB64_APP)
         ${IMGUI_DIR}/backends
         ${NFD_DIR}/include
         src/app
+        ${LUA_INCLUDE_DIR}
         lib/glad/include
     )
     # WebGPU launcher path: the app lib gets the in-house ImGui-on-WebGPU renderer
@@ -2382,6 +2385,7 @@ if(MGB64_APP)
         target_include_directories(mgb64_app PRIVATE ${SDL2_INCLUDE_DIRS})
         target_link_libraries(mgb64_app PUBLIC ${SDL2_LIBRARIES})
     endif()
+    target_link_libraries(mgb64_app PUBLIC ${LUA_LIBRARIES})
     if(APPLE)
         target_link_libraries(mgb64_app PUBLIC
             ${OPENGL_LIB}
@@ -2453,6 +2457,17 @@ if(MGB64_APP)
         target_include_directories(test_mod_catalog PRIVATE src/app)
         target_compile_features(test_mod_catalog PRIVATE cxx_std_17)
         add_test(NAME mod_catalog COMMAND test_mod_catalog)
+
+        # Isolated Lua states, allowlisted libraries, setup time/memory bounds,
+        # and all-or-nothing load rollback; no ROM, SDL, or ImGui required.
+        add_executable(test_mod_runtime
+            tests/test_mod_runtime.cpp
+            src/app/mod_catalog.cpp
+            src/app/mod_runtime.cpp)
+        target_include_directories(test_mod_runtime PRIVATE src/app ${LUA_INCLUDE_DIR})
+        target_link_libraries(test_mod_runtime PRIVATE ${LUA_LIBRARIES})
+        target_compile_features(test_mod_runtime PRIVATE cxx_std_17)
+        add_test(NAME mod_runtime COMMAND test_mod_runtime)
 
         add_executable(test_rom_validate
             tests/test_rom_validate.cpp

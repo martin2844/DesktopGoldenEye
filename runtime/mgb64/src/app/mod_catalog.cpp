@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <map>
@@ -237,6 +238,13 @@ ModCatalog scanCatalog(const std::string &root) {
         return a.name < b.name;
     });
     return catalog;
+}
+
+std::string configuredModsRoot() {
+    if (const char *configured = std::getenv("MGB64_MODS_DIR")) {
+        if (configured[0]) return configured;
+    }
+    return "mods";
 }
 
 }  // namespace modplatform

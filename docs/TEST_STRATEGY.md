@@ -4,6 +4,8 @@
 
 Public CI must be useful without possessing GoldenEye data. Private ROM-backed tests supply integration confidence but cannot be the only tests that protect package parsing, dependency resolution, schemas, Lua behavior, persistence, platform lifecycle, or author tools.
 
+Current evidence: `test_mod_catalog` covers manifest identity, duplicate fields/IDs, missing entrypoints, drive-relative and parent traversal rejection. `test_mod_runtime` covers removed unsafe libraries, the allowlisted host API, per-state isolation, runaway setup timeout, missing enabled packages, all-or-nothing unload, and host-state restoration. Both are native Windows tests and require no ROM. The private launcher autoplay smoke additionally proves enabled Lua setup before a Dam render.
+
 Tests are divided by data class:
 
 - **public synthetic:** independently authored fixtures safe for Git and public CI;

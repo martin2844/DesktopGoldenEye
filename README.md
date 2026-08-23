@@ -2,7 +2,7 @@
 
 An unofficial pet-project plan for a native GoldenEye 007 PC runtime with a Gen1Recomp-style modding experience. Android is a later nice-to-have.
 
-> Status: first Windows vertical slice works locally. The asset-free runtime and launcher build, the user's ordinary US ROM boots Dam, and the launcher discovers validated mod packages. Lua execution is the next milestone. No ROM data is included.
+> Status: first Windows modding vertical slice works locally. The user's ordinary US ROM boots Dam, the launcher discovers and enables packages, and isolated Lua mods execute a small semantic game API. No ROM data is included.
 
 ## Product promise
 
@@ -17,7 +17,7 @@ The project deliberately separates two lanes:
 
 - MGB64's portable C engine and C++17 Dear ImGui application shell, pinned in `runtime/mgb64`.
 - GoldenRecomp and N64Recomp remain research inputs, not the reproducible product baseline.
-- Standard Lua 5.4 embedded as the friendly authoring language.
+- A Lua 5.4-compatible author Interface (currently hosted by Lua 5.5.1) as the friendly mod language.
 - SDL2 plus the runtime's WebGPU/OpenGL renderer paths.
 - Windows x86-64 first because it is now built and ROM-smoke-tested on this PC; Linux x86-64 follows.
 - A future thin Kotlin Android shell only after the desktop alpha is healthy.

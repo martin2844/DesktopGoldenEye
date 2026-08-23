@@ -126,7 +126,7 @@ Every milestone has an exit gate. A milestone is not complete because code exist
 
 ## M5 — Mod platform kernel
 
-**Status:** started early after the baseline proof. Directory scan and strict manifest validation are implemented; resolution, Lua isolation, permissions, and transactions remain.
+**Status:** started early after the baseline proof. Directory scan, strict manifest validation, persisted enable state, isolated/bounded Lua setup, transactional rollback, and one semantic operation are implemented. Dependency resolution, broader permissions, registries, runtime callbacks, and scoped persistence remain.
 
 **Purpose:** build safe mechanics before game breadth.
 

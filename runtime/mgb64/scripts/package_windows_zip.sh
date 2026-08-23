@@ -37,8 +37,21 @@ ldd "$binary" | awk '{print $3}' | while read -r dll; do
 done
 # Ensure SDL2.dll made it (belt and suspenders).
 [[ -f "$stage/SDL2.dll" ]] || { [[ -f "$mingw_prefix/bin/SDL2.dll" ]] && cp "$mingw_prefix/bin/SDL2.dll" "$stage/"; }
+# The mod platform links the MSYS2 Lua runtime dynamically. Ship its MIT notice
+# beside the DLL whenever present so the portable bundle remains compliant.
+if [[ -f "$stage/lua55.dll" && -f "$mingw_prefix/share/licenses/lua/LICENSE" ]]; then
+  cp "$mingw_prefix/share/licenses/lua/LICENSE" "$stage/LUA_LICENSE.txt"
+fi
+if [[ -f "$stage/SDL2.dll" && -f "$mingw_prefix/share/licenses/SDL2/LICENSE.txt" ]]; then
+  cp "$mingw_prefix/share/licenses/SDL2/LICENSE.txt" "$stage/SDL2_LICENSE.txt"
+fi
 
 cp LICENSE README.md "$stage/" 2>/dev/null || true
+cp lib/imgui/LICENSE.txt "$stage/IMGUI_LICENSE.txt" 2>/dev/null || true
+cp lib/nfd/LICENSE "$stage/NFD_LICENSE.txt" 2>/dev/null || true
+cp lib/glad/LICENSE "$stage/GLAD_LICENSE.txt" 2>/dev/null || true
+cp lib/fonts/LICENSE.txt "$stage/FONT_LICENSE.txt" 2>/dev/null || true
+cp lib/sdl_gamecontrollerdb/LICENSE.txt "$stage/GAMECONTROLLERDB_LICENSE.txt" 2>/dev/null || true
 # Community controller-mapping DB (MC.2), next to the exe where SDL_GetBasePath()
 # resolves it at controller init.
 cp lib/sdl_gamecontrollerdb/gamecontrollerdb.txt "$stage/" 2>/dev/null || true
