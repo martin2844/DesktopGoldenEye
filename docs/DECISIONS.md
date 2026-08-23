@@ -139,3 +139,33 @@ Each decision that changes should preserve the old entry, add a superseding entr
 | native extension ABI promise | real expert mods and upgrade cost | after beta |
 | Japanese/PAL ROM support | symbol/data differences and community demand | after M6 |
 | online multiplayer | deterministic runtime/netcode scope | post-1.0 research |
+
+## D-015 — MGB64 is the desktop baseline
+
+**Status:** Accepted; supersedes D-002, D-003, and D-008 for the primary implementation line
+**Decision:** pin MGB64 at `0d1d40b4` as an editable squashed subtree and build the mod platform into its existing in-process launcher and C engine Seams.
+
+**Evidence:** the documented GoldenRecomp dependency cannot be fetched; MGB64 built with MinGW64, validated the ordinary supported US `.n64` ROM, and rendered Dam through WebGPU on Windows.
+
+**Consequence:** N64Recomp native-mod machinery is no longer assumed. Dependency resolution, Lua isolation, transactions, and semantic hooks will be implemented as focused Modules over MGB64. RT64 is not the selected renderer.
+
+## D-016 — Match the baseline's implementation languages
+
+**Status:** Accepted; narrows D-001
+**Decision:** preserve MGB64's portable C engine and C++17 shell. Use C++17 for the first ModPlatform host, Lua 5.4 for authored mods, and Python only where author tooling benefits from it.
+
+**Why:** forcing C++20 or rewriting working C creates no product Leverage. A future isolated Module may raise its own language level when a dependency requires it.
+
+## D-017 — Directory manifests before executable mods
+
+**Status:** Accepted for the first vertical slice
+**Decision:** discover unpacked development packages with a strict top-level `manifest.toml` v1 subset before embedding Lua or finalizing `.gemod` archives.
+
+**Why:** catalog discovery, validation errors, identity, and path safety are independently testable without executing untrusted code. D-009's deterministic `.gemod` archive remains a later packaging decision.
+
+## D-018 — Mod execution is a named safety gate
+
+**Status:** Accepted
+**Decision:** the launcher may list packages now, but it must state that scripts are not executed until Lua isolation, library removal, host API allowlisting, failure rollback, and no-mod parity tests land together.
+
+**Why:** silently executing a discovered `main.lua` would turn a useful catalog feature into arbitrary native-user process access.

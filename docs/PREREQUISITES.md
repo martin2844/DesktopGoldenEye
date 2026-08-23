@@ -26,9 +26,9 @@ The importer should eventually accept z64, n64, and v64 byte orders, but Phase 0
 
 ### When the ROM becomes necessary
 
-The ROM is not needed to install compilers, build N64Recomp and host tools, pin dependencies, audit provenance, or create the ROM-free mod-platform harness. It is needed for the first playable GoldenEye build.
+The ROM is not needed to install compilers, build the launcher, audit provenance, or run the ROM-free mod-platform tests. It is needed for playable GoldenEye validation.
 
-The current GoldenRecomp experiment expects a special TLB-free, decompressed ROM and matching ELF produced from its GoldenEye decompilation branch. Our intended GameImage Module will eventually generate all required private inputs from the user's ordinary verified ROM. Until that importer exists, the development baseline must perform the upstream transformation locally.
+The selected MGB64 baseline consumes an ordinary `.z64`, `.v64`, or `.n64` image directly at runtime and normalizes byte order in memory. No GoldenRecomp-specific transformed ROM or matching ELF is required.
 
 Keep the ROM outside this repository—for example in a private Windows ROM directory—and provide only its local path. Do not upload it, send it through chat, or copy it into an issue or CI artifact. From WSL, a Windows file such as `C:\Games\ROMs\GoldenEye 007 (USA).z64` is normally visible below `/mnt/c/Games/ROMs/`. We will store any configured path only in ignored local configuration.
 
@@ -102,29 +102,27 @@ Environment: Ubuntu 22.04 under WSL2 on a Windows host, x86-64, Ryzen 7 5700G.
 | Lua 5.4.7 | installed |
 | LuaJIT 2.1 snapshot | installed |
 | Node 22.13.1 | installed; optional |
-| CMake | missing |
+| Native Windows CMake 4.4.2 via MSYS2 | installed |
 | Clang/LLVM | missing |
 | Java/JDK | missing |
 | ADB | missing |
 | Android SDK manager | missing |
 | Android NDK | missing |
 | Gradle | missing; project should use wrapper later |
-| SDL2/SDL3 pkg-config package | missing |
+| Native Windows SDL2 via MSYS2 | installed |
 | Vulkan diagnostic tools | missing |
 
 Python 3.13 is usable for many tools, but dependencies may lag it. Prefer a Python 3.11 or 3.12 project environment if the pinned tooling fails on 3.13.
 
 ### Windows host audit
 
-Windows command interop works and Windows Git is installed at `C:\Program Files\Git\cmd\git.exe`. The following native Windows build requirements were not installed or discoverable during the audit:
+Windows command interop works and Windows Git is installed at `C:\Program Files\Git\cmd\git.exe`. Visual Studio 2022 Build Tools and the C++ workload are installed. The working MGB64 build uses MSYS2 MinGW64 with GCC 16.2, CMake 4.4.2, Ninja, SDL2, Git, Python/Pillow, pkg-config, and zip. MSVC remains useful for research but is not required for the selected runtime.
 
-- Visual Studio/Visual Studio Build Tools and `vswhere`;
-- MSVC `cl.exe`;
-- MSBuild;
-- CMake;
-- Ninja.
+Run the reproducible workflow from the repository root:
 
-Install Visual Studio 2022 Build Tools or Visual Studio Community with **Desktop development with C++**, MSVC x64/x86 tools, a Windows 10/11 SDK, and CMake tools for Windows. The upstream GoldenRecomp instructions expect opening and building the project with Visual Studio, so this is the shortest first baseline.
+```sh
+./scripts/dev-windows.sh all
+```
 
 ## Suggested Ubuntu/WSL desktop bootstrap
 

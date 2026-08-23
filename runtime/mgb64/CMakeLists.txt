@@ -2445,6 +2445,15 @@ if(MGB64_APP)
         target_compile_features(test_launcher_seed PRIVATE cxx_std_17)
         add_test(NAME launcher_seed COMMAND test_launcher_seed)
 
+        # Mod package discovery and manifest validation are isolated from SDL,
+        # ImGui, Lua, and ROM data so the contract can run on every host.
+        add_executable(test_mod_catalog
+            tests/test_mod_catalog.cpp
+            src/app/mod_catalog.cpp)
+        target_include_directories(test_mod_catalog PRIVATE src/app)
+        target_compile_features(test_mod_catalog PRIVATE cxx_std_17)
+        add_test(NAME mod_catalog COMMAND test_mod_catalog)
+
         add_executable(test_rom_validate
             tests/test_rom_validate.cpp
             src/app/rom_validate.cpp)

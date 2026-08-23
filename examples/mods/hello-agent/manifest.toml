@@ -1,0 +1,7 @@
+manifest_version = 1
+id = "example.hello-agent"
+name = "Hello, Agent"
+version = "0.1.0"
+author = "GoldenEye Mod Platform"
+description = "Minimal package used to verify launcher discovery and author tooling."
+entrypoint = "main.lua"

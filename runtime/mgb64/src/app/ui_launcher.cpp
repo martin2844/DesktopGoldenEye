@@ -78,6 +78,7 @@ const PanelDef kPanels[] = {
     {"Launch Options", "launch", LaunchPanel_draw},
     {"Controls", "controls", BindingsPanel_draw},
     {"Modes & Toggles", "modes", ModesPanel_draw},
+    {"Mods", "mods", ModsPanel_draw},
     {"Diagnostics", "diag", DiagPanel_draw},
     {"About", "about", AboutPanel_draw},
 };

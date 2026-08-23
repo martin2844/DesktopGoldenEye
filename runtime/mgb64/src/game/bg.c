@@ -58,6 +58,12 @@ extern bg_portal_data_entry *g_BgPortals;
 s32 sub_GAME_7F0B39BC(int curroom, int unk1, bbox2d *screensize, s32 next);
 void sub_GAME_7F0B3BC4(void);
 s32 bgRectIntersect(struct bbox2d *a, struct bbox2d *b);
+static int bgIsDetachedAuthoredCamera(enum CAMERAMODE camera_mode);
+static s32 bgCollectPortalSeedRoomsFromPosition(
+    s32 current_room,
+    const coord3d *position,
+    s32 *out_rooms,
+    s32 max_rooms);
 s32 sub_GAME_7F0B993C(s32 arg0);
 s32 sub_GAME_7F0B9F14(s32 portalnum, coord3d *arg1, coord3d *arg2);
 

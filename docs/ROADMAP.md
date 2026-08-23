@@ -4,6 +4,8 @@ Every milestone has an exit gate. A milestone is not complete because code exist
 
 ## M0 — Feasibility, provenance, and upstream freeze
 
+**Status:** technically complete for local development; public redistribution provenance remains open.
+
 **Purpose:** establish whether the desired public project is technically and legally plausible.
 
 **Work:**
@@ -29,6 +31,8 @@ Every milestone has an exit gate. A milestone is not complete because code exist
 
 ## M1 — Reproducible desktop vanilla baseline
 
+**Status:** first Windows proof complete (clean native build, ordinary-ROM validation, Dam render). A second clean machine and later mission remain before the full gate is closed.
+
 **Purpose:** prove there is a game worth wrapping.
 
 **Work:**
@@ -49,6 +53,8 @@ Every milestone has an exit gate. A milestone is not complete because code exist
 - no mod code is needed for vanilla play.
 
 ## M2 — Asset-free launcher and direct ROM import
+
+**Status:** largely inherited from MGB64 for the first supported US ROM. Cache/removal semantics in the original plan are no longer required because MGB64 consumes the selected ROM directly at runtime.
 
 **Purpose:** achieve the Gen1Recomp first-run model.
 
@@ -119,6 +125,8 @@ Every milestone has an exit gate. A milestone is not complete because code exist
 **Fallback gate:** keep Android deferred. M5 and later PC milestones never depend on this gate.
 
 ## M5 — Mod platform kernel
+
+**Status:** started early after the baseline proof. Directory scan and strict manifest validation are implemented; resolution, Lua isolation, permissions, and transactions remain.
 
 **Purpose:** build safe mechanics before game breadth.
 

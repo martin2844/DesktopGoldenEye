@@ -54,6 +54,7 @@ void LaunchPanel_draw(LauncherState &s, LauncherAction &out);
 void LaunchPanel_ensureInit(LauncherState &s);                  // load persisted launch options
 void ModesPanel_draw(LauncherState &s, LauncherAction &out);
 void ModesPanel_ensureInit(LauncherState &s);                   // load persisted mode selections
+void ModsPanel_draw(LauncherState &s, LauncherAction &out);     // local package catalog
 void applyModeEnv(const LauncherState &s);                      // setenv hatches + advanced (on Play)
 void DiagPanel_draw(LauncherState &s, LauncherAction &out);     // diagnostics: log + export
 void BindingsPanel_draw(LauncherState &s, LauncherAction &out); // controls: rebind keyboard

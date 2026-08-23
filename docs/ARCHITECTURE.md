@@ -10,13 +10,13 @@ The target flow is:
 user ROM
    │
    ▼
-GameImage.import ──► private GameInstall
-                            │
-                            ▼
-Windows/Linux Adapter ──► GameRuntime ─► Renderer
-                            │
-                            ▼
-                       ModPlatform
+GameImage.inspect/normalize
+   │
+   ▼
+MGB64 Windows/Linux Adapter ──► GameRuntime ─► WebGPU/OpenGL
+                                   │
+                                   ▼
+                              ModPlatform
                  ┌──────────┴──────────┐
                  ▼                     ▼
           Lua author lane       native expert lane
@@ -45,18 +45,17 @@ A new abstraction is justified only when it hides meaningful complexity or when 
 
 ### 1. GameImage
 
-**Responsibility:** turn a user-selected ROM into a verified, normalized, private game install.
+**Responsibility:** verify a user-selected ROM and expose normalized bytes to the runtime without copying the source ROM into the repository or release.
 
 **Initial Interface:**
 
 ```cpp
 ImportResult inspect(const FileRef& rom);
-GameInstall import(const FileRef& rom, const ImportOptions&);
-void verify(const GameInstall&);
-void remove(const GameInstall&);
+NormalizedGameImage open(const FileRef& rom);
+void verify(const NormalizedGameImage&);
 ```
 
-It hides ROM byte order, SHA-1 verification, supported revisions, any deterministic patch needed by the recompilation pipeline, extracted private assets, cache versions, interrupted import recovery, and atomic replacement.
+It hides ROM byte order, supported revision checks, and the normalized in-memory view consumed by the engine. MGB64 already handles `.z64`, `.v64`, and `.n64` inputs directly; a private derived-asset cache should be added only when a real mod feature needs one.
 
 The initial accepted ROM is the US release with SHA-1:
 
@@ -64,7 +63,7 @@ The initial accepted ROM is the US release with SHA-1:
 abe01e4aeb033b6c0836819f549c791b26cfde83
 ```
 
-Other revisions are separate compatibility work. The original ROM path is released after import and is not copied into the application. Derived artifacts remain private and are invalidated by an importer version.
+Other revisions are separate compatibility work. The ROM stays in the user's chosen location and is never copied into Git or a release bundle.
 
 ### 2. GameRuntime
 
@@ -97,7 +96,7 @@ LoadReport load(const Resolution&, GameRuntime&);
 void unload(GameRuntime&);
 ```
 
-Its Implementation reuses N64ModernRuntime's native mod machinery where practical: manifests, dependency resolution, events, hooks, code handles, configuration, ordering, and content types. It adds the Gen1Recomp-shaped author experience: Lua entry chunks, schema-backed registries, profiles, permissions, rollback journals, scoped persistence, diagnostics, and cross-platform packages.
+Its Implementation begins as a focused C++17 Module inside MGB64's app shell. The first shipped Seam is already ROM-free: directory discovery and strict `manifest.toml` validation. It will add dependency resolution, isolated Lua entry chunks, schema-backed registries, profiles, permissions, rollback journals, scoped persistence, diagnostics, and cross-platform packages in that order.
 
 A failed mod load must either roll back all of that mod's registrations or fail the launch before gameplay. Partial mutation is not allowed.
 
@@ -140,17 +139,13 @@ Raw memory access is not part of the stable Lua Interface. A quarantined experim
 
 **Responsibility:** adapt the runtime to Windows and Linux desktop hosts first, with Android only as a later optional Adapter.
 
-The initial Windows Adapter owns windows, controllers, filesystem dialogs, clipboard, logging, and shutdown. The Linux Adapter must meet GameRuntime at the same real Seam without changing game or mod semantics. A future Android Adapter may own Activity lifecycle, Storage Access Framework ROM selection, controller/touch input, audio focus, suspend/resume, thermal state, and process recreation.
+MGB64's existing application shell owns windows, controllers, filesystem dialogs, logging, and shutdown. The same SDL2/ImGui shell has Windows and Linux paths; platform-specific behavior stays behind those existing Seams. A future Android Adapter may own Activity lifecycle, Storage Access Framework ROM selection, controller/touch input, audio focus, suspend/resume, thermal state, and process recreation.
 
 Kotlin should stay thin: permissions, file picker, settings screens, and lifecycle forwarding. Gameplay behavior belongs in shared C++.
 
 ### 7. RendererHost
 
-Desktop initially uses RT64 through its existing host integration. Windows is qualified first, followed by Linux. If the optional Android port begins later, it is not treated as another compile flag: current upstream contains explicitly unimplemented Android window paths. That future spike must compare:
-
-1. completing the RT64 Vulkan Android Adapter;
-2. isolating RT64's renderer from its desktop window assumptions;
-3. using another renderer behind a proven Seam.
+Desktop uses MGB64's proven WebGPU/OpenGL renderer paths. Windows is qualified first, followed by Linux. If the optional Android port begins later, it is not treated as another compile flag. That future spike must compare adapting the existing renderer, adding a GLES/Vulkan mobile Adapter, or deliberately deferring Android.
 
 Do not create a generic renderer Interface until the spike produces a second viable Adapter. Premature abstraction would hide no complexity and reduce Locality.
 

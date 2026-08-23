@@ -5,12 +5,12 @@ Scale: probability and impact are Low/Medium/High. “Trigger” is the observab
 | ID | Risk | P | I | Mitigation / experiment | Trigger |
 |---|---|---:|---:|---|---|
 | R1 | GoldenEye decomp/generated artifacts have unclear redistribution provenance | High | High | M0 file-by-file inventory; conservative local generation; qualified legal review before release | cannot classify a required public artifact |
-| R2 | RT64 Android host is substantially unimplemented | High | Medium | defer until desktop alpha; later time-boxed Vulkan/physical-device spike; do not couple PC Interfaces to Android assumptions | no representative frame/lifecycle proof within optional spike |
-| R3 | GoldenRecomp baseline cannot complete missions reliably | Medium | High | M1 representative mission gate; compare alternate baseline; keep issue census before mod work | persistent blockers in Dam/later mission |
+| R2 | No qualified Android host exists for the selected runtime | High | Medium | defer until desktop alpha; later time-boxed renderer/lifecycle spike; do not couple PC Interfaces to Android assumptions | no representative frame/lifecycle proof within optional spike |
+| R3 | MGB64 has later-mission correctness gaps despite passing Dam | Medium | High | run representative mission gate; keep upstream fidelity/issue census before freezing semantic hooks | persistent blockers in later missions |
 | R4 | 60 fps presentation changes simulation behavior | High | High | separate clocks; weapon/AI/door/timer census; replay assertions at rates | state/event divergence by presentation rate |
-| R5 | custom GoldenEye graphics commands leave skybox/water/effects wrong | High | Medium | command trace and scene captures; upstreamable RT64 fixes; alpha scope disclosure only for nonblocking defects | mission clarity or completion affected |
-| R6 | special transformed ROM flow violates “ordinary ROM” ease | Medium | High | hide deterministic normalization in GameImage; atomic cache; cross-platform importer | player must use external proprietary/manual tool |
-| R7 | local recomp generation is too slow or fragile on Android | Medium | High | benchmark AOT/local-cache options; precompute only legally distributable tools; desktop import/export of private install only if safe | first-run exceeds acceptable time or fails common phones |
+| R5 | custom GoldenEye graphics behavior leaves skybox/water/effects wrong | Medium | Medium | use MGB64's capture/fidelity harnesses and upstream general renderer fixes | mission clarity or completion affected |
+| R6 | direct ordinary-ROM flow regresses or leaks ROM data | Low | High | keep ROM outside Git; private smoke only; artifact scans; all byte orders tested | player needs a transformed image or release contains ROM bytes |
+| R7 | a future Android renderer/host is too slow or fragile | Medium | High | benchmark only after desktop alpha; keep package/Lua Interfaces platform-neutral | first representative scene misses lifecycle or performance gate |
 | R8 | semantic Lua Interface mirrors unstable internals | Medium | High | deep GoldenEyeModel, semantic IDs, handles, schemas, no raw memory; M6 modder review | ordinary update breaks many sample mods |
 | R9 | broad Interface designed before game parity creates permanent mistakes | Medium | High | freeze only vertical slice after M3; mark experimental; compatibility tests | public tutorials depend on provisional behavior |
 | R10 | Lua callbacks hurt frame time or destabilize threads | Medium | High | safe phases, budgets, profiling, no real-time audio callbacks, bounded event payloads | mod overhead exceeds frame budget |
@@ -38,7 +38,7 @@ Scale: probability and impact are Low/Medium/High. “Trigger” is the observab
 ## Top five immediate risks
 
 1. **R1 provenance:** determines whether a public binary/repository model is viable.
-2. **R3 baseline correctness:** no mod platform can rescue a broken game.
+2. **R3 baseline breadth:** Dam passes, but later missions must qualify before semantic Interfaces freeze.
 3. **R4 timing:** incorrect simulation would poison gameplay and mod contracts.
 4. **R8 semantic stability:** brittle low-level Lua bindings would undermine the whole mod ecosystem.
 5. **R22 sustainability:** the architecture and release process must remain pet-project sized.

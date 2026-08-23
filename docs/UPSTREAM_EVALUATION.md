@@ -1,8 +1,20 @@
 # Upstream evaluation
 
+## Implementation update — MGB64 selected
+
+The original N64Recomp recommendation below is retained as the historical Phase 0 hypothesis. It was superseded after direct build evidence on 2026-08-23.
+
+The selected desktop baseline is now **MGB64**, pinned at `0d1d40b4`. Its Module is substantially deeper for this product: one portable C/C++ codebase already provides ordinary-ROM `.z64`/`.v64`/`.n64` validation, an in-process Dear ImGui launcher, SDL2 input/audio, WebGPU/OpenGL rendering, Windows/Linux/macOS build paths, saves, diagnostics, and direct mission boot. On this PC it built with GCC 16, validated the exact supported US `.n64` ROM, and rendered Dam.
+
+GoldenRecomp was rejected as the implementation baseline because its pinned `lib/ge` source dependency is private/unavailable and the public mirror no longer contains the required commit or transformation branch. A build that cannot be reproduced from its documented inputs is not a viable foundation for this pet project.
+
+N64Recomp, N64ModernRuntime, RT64, and GoldenRecomp remain valuable research inputs. They are no longer dependencies on the shortest path to a Gen1Recomp-like player and mod-author experience.
+
+The selected runtime is vendored as a squashed subtree so local changes are editable and upstream provenance stays visible. Public binary redistribution remains gated on a file-level provenance and notice review; local gameplay success does not resolve that legal question.
+
 ## Recommendation
 
-Use the **N64Recomp ecosystem as the primary engineering line**, with N64ModernRuntime as the low-level runtime/mod substrate and GoldenRecomp as the closest game-specific experiment. Build a separate Lua-first GoldenEyeModel on top to deliver Gen1Recomp-like mod ergonomics.
+Historical recommendation: use the **N64Recomp ecosystem as the primary engineering line**, with N64ModernRuntime as the low-level runtime/mod substrate and GoldenRecomp as the closest game-specific experiment. Build a separate Lua-first GoldenEyeModel on top to deliver Gen1Recomp-like mod ergonomics.
 
 An important distinction: Gen1Recomp is a handwritten Lua/LÖVE2D reimplementation that imports data from the player's ROM; it is not itself an N64 static recompiler. This project should mimic its product setup and mod-author experience, not copy its internal runtime architecture. GoldenEye's real-time N64 execution, renderer, timing, and native-code needs make a C++ recompilation host the more appropriate core.
 
@@ -26,6 +38,7 @@ The audit on 2026-08-23 examined:
 | [RT64](https://github.com/rt64/rt64) | current checkout during audit | desktop renderer, texture replacement | Android window paths contain explicit unimplemented branches |
 | [GoldenRecomp](https://github.com/kholdfuzion/GoldenRecomp) | `f31b5d1` | GoldenEye-specific recomp experiment and patch knowledge | work in progress; special transformed ROM/ELF flow; no release |
 | [GoldenEye decompilation](https://github.com/n64decomp/007) | `c4356466` | symbols, structures, behavior, build comparison | no obvious repository-level license; proprietary-header provenance needs review |
+| [MGB64](https://github.com/akratch/mgb64) | `0d1d40b4` | selected source-port runtime, launcher, renderer, direct ROM flow | public redistribution still needs file-level provenance review |
 
 Revisions should be captured again in a machine-readable dependency lock when implementation begins.
 
@@ -33,10 +46,10 @@ Revisions should be captured again in a machine-readable dependency lock when im
 
 | Option | Ordinary N64 ROM | Desktop | Android | Mod foundation | Maturity for this goal | Decision |
 |---|---:|---:|---:|---:|---|---|
-| N64Recomp + N64ModernRuntime + game patches | achievable through local import | strong | substantial port work | strong native base | best long-term fit | primary |
+| N64Recomp + N64ModernRuntime + game patches | achievable through local import | strong | substantial port work | strong native base | useful research, longer integration | research |
 | GoldenRecomp unchanged | transformed ROM/ELF currently expected | early | absent | upstream N64Recomp lane | useful experiment | research/fork input |
 | GoldenEye decomp native port | local baserom build | potentially | potentially | must design | code understanding is strong, product integration unclear | reference, not first distribution line |
-| MGB64/source-port line | ordinary ROM in historical builds | desktop | no established Android target | limited for this goal | archived/discontinued in 2026 | fallback research |
+| MGB64/source-port line | ordinary ROM directly | Windows/Linux/macOS | no established Android target | custom Lua layer required | active, launcher and gameplay already integrated | **selected** |
 | XBLA recomp projects | requires unreleased Xbox game files | some builds | some builds | varies | fails the N64-ROM requirement | reject |
 | emulator plus ROM patches | yes | mature | mature | mature ROM-hack ecosystem | does not create the requested native/mod author experience | compatibility input only |
 
@@ -48,17 +61,15 @@ Its natural author level is still lower than Gen1Recomp's. GoldenEye modders sho
 
 ## Direct-ROM import strategy
 
-The desired player experience is direct selection of a normal ROM, even if the underlying recompiler needs normalized or patched input:
+The desired player experience is direct selection of a normal ROM. MGB64 already supplies the short path:
 
 1. File picker selects a local ROM.
 2. GameImage normalizes z64/n64/v64 byte order in memory or private cache.
-3. It verifies the known game revision.
-4. It deterministically creates any TLB-free/decompressed/patched private input required by the pinned build.
-5. It derives private assets or tables and writes them atomically.
-6. It stores source and tool hashes, not the original ROM.
-7. It releases the selected file and launches from the private GameInstall.
+3. It verifies the supported US game image.
+4. It normalizes byte order in memory and passes the selected path to the runtime.
+5. It stores the remembered path and user settings, not a ROM copy.
 
-Whether generated recompiled game code can be cached or distributed is a Phase 0 legal/provenance question. The conservative fallback is to generate it locally.
+Future texture/content derivation must remain private and versioned, but it is not part of first launch.
 
 ## Known technical gaps inherited from the GoldenEye recomp experiment
 

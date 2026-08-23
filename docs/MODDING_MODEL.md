@@ -13,6 +13,10 @@ A mod author should not need to build the runtime, link C++, calculate RDRAM add
 
 ## Package format
 
+The implemented development format is currently an unpacked directory containing `manifest.toml` and a declared Lua entrypoint. The launcher discovers and validates this format today; it does not execute Lua yet. See [Current Status](CURRENT_STATUS.md) for the exact v1 subset.
+
+The `.gemod` archive described below is the intended distribution format after resolver, permission, archive-safety, and reproducibility gates pass. Its JSON/TOML representation will be reconciled with the implemented schema before it freezes.
+
 A `.gemod` is a reproducible ZIP with a fixed root layout:
 
 ```text

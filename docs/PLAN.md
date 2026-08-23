@@ -5,11 +5,11 @@
 Build an unofficial, cleanly distributed GoldenEye 007 mod platform where:
 
 - the player selects a legally obtained ordinary US N64 ROM;
-- import happens locally and produces a private, versioned GameInstall;
+- the selected ROM is validated and normalized in memory without entering Git or release artifacts;
 - the native runtime plays reliably on Windows first and Linux next;
 - the Lua `.gemod` package is platform-neutral and works across supported PC builds;
 - a beginner makes a useful first mod in under 15 minutes;
-- advanced authors can use native N64Recomp mods without forcing that complexity on everyone;
+- advanced authors can work directly in the C/C++ engine without forcing that complexity on everyone;
 - the project collaborates with the existing GoldenEye ROM-hack community.
 
 The shortest honest route is not “make a full mod SDK first.” It is:
@@ -29,7 +29,7 @@ provenance + runnable game
 ### Player metrics
 
 - Clean install to first playable frame in under 10 minutes, excluding ROM acquisition.
-- Imported ROM never needs to remain accessible to the launcher.
+- The ROM remains in the player's chosen location and is never copied into the application or release.
 - Dam completion succeeds on supported Windows and Linux PC builds.
 - Reference mod profile launches successfully at least 99% across automated stress runs.
 - A broken Lua mod yields an actionable diagnostic and safe-mode recovery, not a crash loop.
@@ -54,12 +54,12 @@ provenance + runnable game
 
 ## Guiding decisions
 
-1. **C++20 is the product language.** It matches N64Recomp, N64ModernRuntime, RT64, platform tooling, and performance constraints.
+1. **Portable C plus C++17 are the runtime languages.** This preserves the proven MGB64 engine/application boundary instead of creating a rewrite.
 2. **Lua 5.4 is the default mod language.** It gives the short, reloadable author loop seen in Gen1Recomp.
-3. **Windows is the first executable baseline.** The closest upstream path is already Visual Studio-oriented. Linux becomes the second PC Adapter after the baseline is reproducible.
+3. **Windows is the first executable baseline.** It is built and ROM-smoke-tested through MSYS2/MinGW64. Linux becomes the second PC Adapter after the Lua vertical slice.
 4. **Python owns author/build tools.** It is suitable for schemas, scaffolding, lint orchestration, deterministic packaging, and inspection.
 5. **Semantic Interfaces precede breadth.** One deep weapon registry is worth more than dozens of thin memory wrappers.
-6. **N64ModernRuntime machinery is reused.** The project adds a friendly layer rather than recreating dependency resolution, native hooks, and code-mod infrastructure.
+6. **MGB64's deep runtime and launcher Modules are reused.** The project adds a focused mod catalog, Lua host, resolver, transactions, and semantic hooks at their existing Seams.
 7. **Android is optional after desktop alpha.** Shared Interfaces stay portable, but Android cannot block the PC product.
 8. **Private import is a product feature.** Legal/provenance constraints shape architecture, CI, caching, and community tooling from day one.
 
@@ -87,7 +87,7 @@ M5 may prototype against a synthetic host before game hooks stabilize, but no pu
 Deliverables:
 
 - dependency inventory with exact revisions, licenses, notices, and redistribution status;
-- classification of generated recompilation artifacts;
+- classification of the vendored source-port files and any future derived assets;
 - clean-room/contribution policy;
 - reproducible bootstrap/build command;
 - patch ledger for every upstream fork;
@@ -99,8 +99,8 @@ Owner skill set: build engineering, open-source licensing research, N64 toolchai
 
 Deliverables:
 
-- pinned GoldenEye recomp build;
-- normal-ROM transformation/import recipe;
+- pinned MGB64 source-port build;
+- ordinary-ROM validation and byte-order normalization path;
 - reliable controller, audio, save, renderer, and shutdown;
 - known-issue census across all missions and multiplayer menus;
 - decoupled simulation/presentation timing;
@@ -203,6 +203,8 @@ Total to a narrow, genuinely pleasant Windows/Linux alpha: roughly 4–8 months 
 
 ## First two weeks
 
+The original schedule below is preserved as the execution baseline. As of 2026-08-23, Days 1–10 are materially complete: the Windows toolchain is installed, MGB64 is pinned and vendored, the ordinary ROM validates, Dam renders, and the first Mods catalog panel plus ROM-free tests exist. The active work now begins at the Lua bridge proof, while provenance and second-machine reproduction continue in parallel.
+
 ### Days 1–2: establish evidence
 
 - Install missing desktop prerequisites from [PREREQUISITES.md](PREREQUISITES.md).
@@ -214,7 +216,7 @@ Total to a narrow, genuinely pleasant Windows/Linux alpha: roughly 4–8 months 
 ### Days 3–5: reproduce the closest game baseline
 
 - Clone selected upstreams recursively at pinned revisions.
-- Follow the upstream GoldenRecomp build exactly before changing anything.
+- Follow the pinned MGB64 build exactly before changing anything.
 - Script only the repeatable, non-proprietary steps.
 - Capture compiler versions, commands, hashes, warnings, and outputs.
 - Reach title screen and Dam; record controller, audio, renderer, timing, and exit behavior.

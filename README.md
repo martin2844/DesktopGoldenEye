@@ -2,7 +2,7 @@
 
 An unofficial pet-project plan for a native GoldenEye 007 PC runtime with a Gen1Recomp-style modding experience. Android is a later nice-to-have.
 
-> Status: planning and feasibility only. No game code, ROM data, or playable build is included.
+> Status: first Windows vertical slice works locally. The asset-free runtime and launcher build, the user's ordinary US ROM boots Dam, and the launcher discovers validated mod packages. Lua execution is the next milestone. No ROM data is included.
 
 ## Product promise
 
@@ -11,33 +11,33 @@ A player supplies a legally obtained GoldenEye 007 US ROM. The launcher verifies
 The project deliberately separates two lanes:
 
 - **Lua lane:** the default, stable, documented interface for gameplay and content mods.
-- **Native lane:** an advanced N64Recomp/N64ModernRuntime path for engine-level work that cannot fit the Lua interface.
+- **Native lane:** direct C/C++ engine work for advanced changes that cannot fit the stable Lua interface.
 
 ## Recommended technical direction
 
-- C++20 host and runtime.
-- N64Recomp plus N64ModernRuntime as the low-level recompilation and native-mod substrate.
-- GoldenRecomp and the GoldenEye decompilation as research inputs, subject to provenance and redistribution review.
+- MGB64's portable C engine and C++17 Dear ImGui application shell, pinned in `runtime/mgb64`.
+- GoldenRecomp and N64Recomp remain research inputs, not the reproducible product baseline.
 - Standard Lua 5.4 embedded as the friendly authoring language.
-- RT64 on supported desktop platforms.
-- Windows x86-64 first because the closest GoldenRecomp build path is currently Visual Studio/Windows-oriented; Linux x86-64 follows once the baseline is understood.
+- SDL2 plus the runtime's WebGPU/OpenGL renderer paths.
+- Windows x86-64 first because it is now built and ROM-smoke-tested on this PC; Linux x86-64 follows.
 - A future thin Kotlin Android shell only after the desktop alpha is healthy.
 - CMake and Ninja for native builds; Python for author tools and code generation.
 
-This is not a commitment to fork one upstream unchanged. The first milestone must prove that the selected baseline is reproducible, redistributable, and capable of completing real missions before public interfaces are frozen.
+The runtime is kept behind an explicit subtree boundary so upstream updates remain auditable. Public release provenance is still a gate even though local build and gameplay are proven.
 
 ## Start here
 
 1. Read [Prerequisites](docs/PREREQUISITES.md) for the ROM, tools, hardware, and current machine gaps.
-2. Read [Upstream Evaluation](docs/UPSTREAM_EVALUATION.md) for the baseline decision and unresolved blockers.
-3. Read [Architecture](docs/ARCHITECTURE.md) and [Modding Model](docs/MODDING_MODEL.md).
-4. Use [Roadmap](docs/ROADMAP.md) for gated implementation order.
-5. Use [Plan](docs/PLAN.md) for scope, work streams, estimates, and the first two weeks.
+2. Read [Current Status](docs/CURRENT_STATUS.md) for the exact commands and evidence from the first working slice.
+3. Read [Upstream Evaluation](docs/UPSTREAM_EVALUATION.md) for the baseline decision and unresolved blockers.
+4. Read [Architecture](docs/ARCHITECTURE.md) and [Modding Model](docs/MODDING_MODEL.md).
+5. Use [Roadmap](docs/ROADMAP.md) and [Plan](docs/PLAN.md) for gated implementation order.
 
 ## Planning index
 
 | Document | Purpose |
 |---|---|
+| [CURRENT_STATUS.md](docs/CURRENT_STATUS.md) | Working build, evidence, commands, manifest contract, and immediate next slice |
 | [PLAN.md](docs/PLAN.md) | Comprehensive execution plan and definition of done |
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Deep Modules, Interfaces, Seams, lifecycle, and proposed repository layout |
 | [GEN1RECOMP_PARITY.md](docs/GEN1RECOMP_PARITY.md) | Feature-for-feature experience target |
