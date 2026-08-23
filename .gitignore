@@ -1,0 +1,73 @@
+# Game and derived data: never commit
+*.z64
+*.n64
+*.v64
+*.rom
+*.wad
+*.xex
+*.elf
+*.o
+*.bin
+*.bps
+*.ips
+*.xdelta
+*.xdelta3
+private-game/
+game-install/
+import-cache/
+derived-assets/
+baserom*
+
+# Native and generated builds
+build/
+build-*/
+out/
+dist/
+generated/
+CMakeUserPresets.json
+compile_commands.json
+*.a
+*.so
+*.dll
+*.dylib
+*.exe
+*.pdb
+*.dSYM/
+
+# Android
+.gradle/
+local.properties
+*.apk
+*.aab
+*.jks
+*.keystore
+captures/
+.cxx/
+
+# Mod packages and local developer state
+*.gemod
+mods-installed/
+profiles/
+saves/
+screenshots/
+replays/private/
+
+# Tools and editors
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+node_modules/
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.key
+*.pem
