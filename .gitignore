@@ -19,6 +19,7 @@ derived-assets/
 baserom*
 
 # Native and generated builds
+.work/
 build/
 build-*/
 out/
