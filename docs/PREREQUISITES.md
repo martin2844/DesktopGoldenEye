@@ -114,6 +114,18 @@ Environment: Ubuntu 22.04 under WSL2 on a Windows host, x86-64, Ryzen 7 5700G.
 
 Python 3.13 is usable for many tools, but dependencies may lag it. Prefer a Python 3.11 or 3.12 project environment if the pinned tooling fails on 3.13.
 
+### Windows host audit
+
+Windows command interop works and Windows Git is installed at `C:\Program Files\Git\cmd\git.exe`. The following native Windows build requirements were not installed or discoverable during the audit:
+
+- Visual Studio/Visual Studio Build Tools and `vswhere`;
+- MSVC `cl.exe`;
+- MSBuild;
+- CMake;
+- Ninja.
+
+Install Visual Studio 2022 Build Tools or Visual Studio Community with **Desktop development with C++**, MSVC x64/x86 tools, a Windows 10/11 SDK, and CMake tools for Windows. The upstream GoldenRecomp instructions expect opening and building the project with Visual Studio, so this is the shortest first baseline.
+
 ## Suggested Ubuntu/WSL desktop bootstrap
 
 Review package names for the configured Ubuntu repositories before running:
