@@ -79,7 +79,7 @@ int ReadConfiguration(void)
 	
 	strcpy(gRegSettings.ROMPath, INI_OptionReadString("ROMPath"));
 
-	GetCmdLineParameter(CMDLINE_AUDIO_PLUGIN, tempstr);		//Get command line audio plugin setting
+	GetCmdLineParameter(CMDLINE_AUDIO_PLUGIN, tempstr, sizeof(tempstr));		//Get command line audio plugin setting
 	if( strlen(tempstr) == 0 )
 	{
 		strcpy(gRegSettings.AudioPlugin, INI_OptionReadString("AudioPlugin"));
@@ -89,7 +89,7 @@ int ReadConfiguration(void)
 		strcpy(gRegSettings.AudioPlugin, tempstr);
 	}
 
-	GetCmdLineParameter(CMDLINE_VIDEO_PLUGIN, tempstr);		//Get command line video plugin setting
+	GetCmdLineParameter(CMDLINE_VIDEO_PLUGIN, tempstr, sizeof(tempstr));		//Get command line video plugin setting
 	if( strlen(tempstr) == 0 )
 	{
 		strcpy(gRegSettings.VideoPlugin, INI_OptionReadString("VideoPlugin"));
@@ -99,7 +99,7 @@ int ReadConfiguration(void)
 		strcpy(gRegSettings.VideoPlugin, tempstr);
 	}
 	
-	GetCmdLineParameter(CMDLINE_CONTROLLER_PLUGIN, tempstr);		//Get command line controller plugin setting
+	GetCmdLineParameter(CMDLINE_CONTROLLER_PLUGIN, tempstr, sizeof(tempstr));		//Get command line controller plugin setting
 	if( strlen(tempstr) == 0 )
 	{
 		strcpy(gRegSettings.InputPlugin, INI_OptionReadString("InputPlugin"));
@@ -167,7 +167,7 @@ int ReadConfiguration(void)
 		strcpy(directories.save_directory_to_use, user_set_save_directory);
 
 	/* Set the ROM directory to use */
-	GetCmdLineParameter(CMDLINE_ROM_DIR, tempstr);		//Get command line rom path setting
+	GetCmdLineParameter(CMDLINE_ROM_DIR, tempstr, sizeof(tempstr));		//Get command line rom path setting
 	if( strlen(tempstr) > 0 )
 	{
 		strcpy(directories.rom_directory_to_use, tempstr);

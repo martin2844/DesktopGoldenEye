@@ -30,20 +30,43 @@ foreach ($relativePath in $required) {
     }
 }
 
+$settings = Get-GoldenEyeLauncherSettings -InstallRoot $InstallRoot -RomPath $RomPath
+Set-GoldenEyeRuntimeSettings -InstallRoot $InstallRoot -Settings $settings
+
 $runtimeConfig = Get-Content -LiteralPath (Join-Path $InstallRoot '1964\1964.cfg') -Raw
-@('VideoPlugin GLideN64.dll', 'InputPlugin Mouse_Injector.dll', 'GEFiringRateHack 1', 'AutoFullScreen 0') | ForEach-Object {
-    if (-not $runtimeConfig.Contains($_)) { throw "1964 quality profile is missing: $_" }
+@('VideoPlugin GLideN64.dll', 'InputPlugin Mouse_Injector.dll', 'GEFiringRateHack 1', 'GEDisableHeadRoll 1', 'PauseWhenInactive 1', 'AutoFullScreen 0') | ForEach-Object {
+    if (-not $runtimeConfig.ToLowerInvariant().Contains($_.ToLowerInvariant())) { throw "1964 quality profile is missing: $_" }
 }
 
 $videoConfig = Get-Content -LiteralPath (Join-Path $InstallRoot '1964\plugin\GLideN64.ini') -Raw
-@('video\verticalSync=0', 'video\multisampling=0', 'generalEmulation\enableLOD=1', 'frameBufferEmulation\aspect=2', 'textureFilter\txHiresEnable=1') | ForEach-Object {
+@('video\verticalSync=0', 'video\multisampling=4', 'video\fxaa=0', 'texture\maxAnisotropy=16', 'generalEmulation\enableLOD=1', 'frameBufferEmulation\aspect=2', 'textureFilter\txHiresEnable=1', 'onScreenDisplay\showFPS=0') | ForEach-Object {
     if (-not $videoConfig.Contains($_)) { throw "GLideN64 quality profile is missing: $_" }
 }
 if ($videoConfig -match '@[A-Z_]+@') { throw 'GLideN64 quality profile contains an unresolved template token.' }
 
-$settings = Get-GoldenEyeLauncherSettings -InstallRoot $InstallRoot
-if ($settings.schemaVersion -ne 2 -or $settings.controlPreset -ne 'ModernFPS') {
+if ($settings.schemaVersion -ne 3 -or $settings.controlPreset -ne 'ModernFPS' -or $settings.antiAliasing -ne 'MSAA4' -or $settings.anisotropy -ne 16) {
     throw 'Launcher state did not migrate to the Modern FPS schema.'
+}
+
+$firstBackup = Backup-GoldenEyeSaves -InstallRoot $InstallRoot -Retention 2
+$secondBackup = Backup-GoldenEyeSaves -InstallRoot $InstallRoot -Retention 2
+if ($firstBackup -ne $secondBackup) {
+    throw 'Content-aware save backup created a duplicate snapshot without save changes.'
+}
+
+$diagnostics = Get-GoldenEyeDiagnostics -InstallRoot $InstallRoot
+@('1964 GEPD Q Branch diagnostics', 'Runtime complete: True', 'Selected core:', 'ROM: verified') | ForEach-Object {
+    if (-not $diagnostics.Contains($_)) { throw "Diagnostics output is missing: $_" }
+}
+$qBranchExecutable = Join-Path $InstallRoot '1964\1964-qbranch.exe'
+if (Test-Path -LiteralPath $qBranchExecutable -PathType Leaf) {
+    $selectedExecutable = Get-QualityRuntimeExecutable -InstallRoot $InstallRoot
+    if ((Split-Path -Leaf $selectedExecutable) -ne '1964-qbranch.exe') {
+        throw 'The launcher did not prefer the installed Q Branch core.'
+    }
+    if (-not $diagnostics.Contains('Selected core: 1964-qbranch.exe')) {
+        throw 'Diagnostics did not identify the selected Q Branch core.'
+    }
 }
 
 $mouseProfile = @(Get-Content -LiteralPath (Join-Path $InstallRoot '1964\plugin\mouseinjector.ini') | ForEach-Object { [int]$_ })
@@ -154,4 +177,4 @@ finally {
     [void][GoldenEyeCaptureTestProbe]::SetCursorPos($originalCursor.X, $originalCursor.Y)
 }
 
-Write-Host "PASS: ROM verified as $($rom.Format); launcher, Modern FPS controls, and windowed mouse capture are complete."
+Write-Host "PASS: ROM verified as $($rom.Format); graphics QoL, save backups, diagnostics, Modern FPS controls, and windowed mouse capture are complete."

@@ -2,7 +2,7 @@
 
 An unofficial, quality-of-life-focused fork of [Graslu's 1964 GEPD Edition](https://github.com/Graslu/1964GEPD), paired with a friendly GoldenEye 007 launcher and a path toward Gen1Recomp-style modding. Windows is the first supported platform; Android is a later nice-to-have.
 
-> Status: the Windows launcher boots a user-supplied US ROM through 1964GEPD + GLideN64 with Modern FPS controls, configurable display settings, and verified runtime files. The original 1964GEPD source is now part of this repository's Git ancestry. No ROM data is included.
+> Status: the Windows launcher boots a user-supplied US ROM through the source-built Q Branch core + GLideN64 with Modern FPS controls, configurable quality settings, save backups, and diagnostics. The original 1964GEPD source is part of this repository's Git ancestry. No ROM data is included.
 
 1964 0.8.5 is Copyright (c) 1999–2002 Joel Middendorf. This fork retains the upstream GPL-2.0 license and notices. The unmodified 1964 0.8.5 source is available from [SourceForge](https://sourceforge.net/projects/schibo/files/1964%200.8.5/1964-2002-0922.zip/1964-2002-0922.zip).
 
@@ -17,7 +17,7 @@ The project deliberately separates two lanes:
 
 ## Recommended technical direction
 
-- This source fork of 1964GEPD + GLideN64 as the immediate Windows quality Adapter. Until reproducible modern builds are complete, Setup downloads the official release and verifies both SHA-1 and SHA-256 before applying this fork's configuration and launcher.
+- This source fork of 1964GEPD + GLideN64 as the immediate Windows quality Adapter. The 2002-era x86 C core now builds with Visual Studio 2022; the launcher prefers `1964-qbranch.exe` when installed and retains the official executable as fallback. Setup still retrieves the checksum-pinned upstream bundle for plugins, configuration data, notices, and optional legacy components.
 - MGB64's portable C engine and C++17 Dear ImGui shell, pinned in `runtime/mgb64`, as the experimental Lua/mod Adapter.
 - GoldenRecomp and N64Recomp remain research inputs, not the reproducible product baseline.
 - A Lua 5.4-compatible author Interface (currently hosted by Lua 5.5.1) as the friendly mod language.
@@ -32,10 +32,11 @@ The Runtime Interface is the stable Seam. Emulator acquisition/configuration, RO
 
 1. Read [Prerequisites](docs/PREREQUISITES.md) for the ROM, tools, hardware, and current machine gaps.
 2. Read [Quality Baseline](docs/QUALITY_BASELINE.md) for the ready-to-play launcher, controls, hashes, and current tradeoffs.
-3. Read [Current Status](docs/CURRENT_STATUS.md) for exact commands and evidence from both runtime tracks.
-4. Read [Upstream Evaluation](docs/UPSTREAM_EVALUATION.md) for the baseline decision and unresolved blockers.
-5. Read [Architecture](docs/ARCHITECTURE.md) and [Modding Model](docs/MODDING_MODEL.md).
-6. Use [Roadmap](docs/ROADMAP.md) and [Plan](docs/PLAN.md) for gated implementation order.
+3. Read [Building on Windows](docs/BUILDING_WINDOWS.md) to reproduce and install the Q Branch executable.
+4. Read [Current Status](docs/CURRENT_STATUS.md) for exact commands and evidence from both runtime tracks.
+5. Read [Upstream Evaluation](docs/UPSTREAM_EVALUATION.md) for the baseline decision and unresolved blockers.
+6. Read [Architecture](docs/ARCHITECTURE.md) and [Modding Model](docs/MODDING_MODEL.md).
+7. Use [Roadmap](docs/ROADMAP.md) and [Plan](docs/PLAN.md) for gated implementation order.
 
 ## Planning index
 
@@ -43,6 +44,7 @@ The Runtime Interface is the stable Seam. Emulator acquisition/configuration, RO
 |---|---|
 | [CURRENT_STATUS.md](docs/CURRENT_STATUS.md) | Working build, evidence, commands, manifest contract, and immediate next slice |
 | [QUALITY_BASELINE.md](docs/QUALITY_BASELINE.md) | Default Windows runtime, quality profile, mouse/WASD ownership, checksums, and launch instructions |
+| [BUILDING_WINDOWS.md](docs/BUILDING_WINDOWS.md) | Reproducible Visual Studio 2022 build and side-by-side installation |
 | [PLAN.md](docs/PLAN.md) | Comprehensive execution plan and definition of done |
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Deep Modules, Interfaces, Seams, lifecycle, and proposed repository layout |
 | [GEN1RECOMP_PARITY.md](docs/GEN1RECOMP_PARITY.md) | Feature-for-feature experience target |
@@ -65,4 +67,4 @@ The Runtime Interface is the stable Seam. Emulator acquisition/configuration, RO
 
 ## Legal and project identity
 
-This project is unofficial and is not affiliated with Nintendo, Rare, Microsoft, MGM, EON Productions, or the upstream projects named here. GoldenEye 007 and related names and assets belong to their respective owners. See [NOTICE.md](NOTICE.md) and [LICENSE](LICENSE).
+This project is unofficial and is not affiliated with Nintendo, Rare, Microsoft, MGM, EON Productions, or the upstream projects named here. GoldenEye 007 and related names and assets belong to their respective owners. See [NOTICE.md](NOTICE.md), [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), and [LICENSE](LICENSE).

@@ -1,18 +1,25 @@
 # Current implementation status
 
-Updated 2026-08-23.
+Updated 2026-08-24.
 
 ## What works now
 
 ### Quality player track
 
-- The official 1964GEPD no-Discord-RPC release is pinned by SHA-1 and SHA-256, downloaded outside Git, and installed without modification.
+- This repository is now a real fork of `Graslu/1964GEPD`, with upstream preserved as a Git remote and in the branch ancestry.
+- The 1964 x86 C core builds with Visual Studio 2022 Build Tools through `scripts/build-1964-windows.ps1`, producing `out/Release/1964-qbranch.exe`.
+- The native command-line parser now handles quoted ROM directory and filename arguments, preserves case, bounds output, and uses the `-r` directory during direct launch.
+- The official no-Discord-RPC release remains pinned by SHA-1 and SHA-256 and supplies the proven GLideN64, AziAudio, Mouse Injector, configuration, and notice files.
 - The Windows launcher validates all three byte orders of the unmodified US ROM by exact raw SHA-1 instead of trusting the filename extension.
-- It configures the latest bundled GLideN64 renderer at the primary display resolution, 16:9, accurate framebuffer/LOD/lighting/coverage settings, and the bundled high-resolution HUD cache.
+- The launcher prefers the source-built Q Branch core when present and falls back to the official core when it is absent.
+- It configures GLideN64 for display mode/resolution, aspect ratio, V-sync, MSAA or FXAA, anisotropic filtering, FPS overlay, accurate framebuffer/LOD/lighting/coverage settings, and the bundled high-resolution HUD cache.
 - Mouse/WASD uses upstream Mouse Injector 2.3. The project did not implement this input path.
+- The launcher owns Modern FPS, GoldenEye hybrid, and Classic control presets; sensitivity, acceleration, invert-Y, head-roll reduction, FOV, and focus pause are configurable.
+- Windowed startup centers the pointer inside the client before Mouse Injector captures it, preventing right-click sniper zoom from opening the desktop context menu.
+- Save files receive content-aware rolling backups with SHA-256 manifests, and the launcher can copy privacy-conscious diagnostics including selected-core/plugin hashes and ROM verification status.
 - The exact user ROM boots into a responsive `GOLDENEYE - Running` window and renders the intro in fullscreen and windowed modes.
 - A ready-to-play command exists at `C:\Users\martin\Source\goldeneye-mod-platform\ready-to-play\GoldenEye-Quality\Play GoldenEye (Quality).cmd`.
-- The source ROM is not copied. A no-space NTFS hard-link beside it works around 1964's whitespace-limited command-line parser.
+- The source ROM is not copied. A byte-order-correct NTFS hard-link supplies the correct `.v64` extension because the user's file is named `.n64` despite containing v64 byte order.
 
 ### Experimental mod track
 
@@ -38,7 +45,20 @@ Double-click:
 C:\Users\martin\Source\goldeneye-mod-platform\ready-to-play\GoldenEye-Quality\Play GoldenEye (Quality).cmd
 ```
 
-Press `4` if mouse injection/cursor lock is not active. Use `Ctrl+I` in windowed mode for sensitivity and bindings. See [QUALITY_BASELINE.md](QUALITY_BASELINE.md) before changing graphics settings; several expensive options worsen mouse latency.
+Press `4` if mouse injection/cursor lock is not active. The launcher is the source of truth for normal controls and graphics; `Ctrl+I` remains available in windowed mode for inspecting the upstream plugin dialog.
+
+## Rebuild and install the Q Branch core
+
+From Windows PowerShell in the checkout:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+  -File .\scripts\build-1964-windows.ps1 `
+  -Configuration Release `
+  -InstallRoot 'C:\Users\martin\Source\goldeneye-mod-platform\ready-to-play\GoldenEye-Quality'
+```
+
+The script locates Visual Studio 2022 MSBuild, stages WSL checkouts onto a case-insensitive NTFS path when necessary, builds the Win32 core, and installs it as `1964-qbranch.exe` without overwriting `1964.exe`.
 
 ## Reproduce the experimental mod track
 
@@ -86,9 +106,9 @@ api.game.unlock_all_levels(true)
 
 ## Next vertical slice
 
-1. Human-test Dam mouse feel, audio, and graphics on the quality profile, then test two renderer-stress missions.
-2. Record a quality issue ledger and freeze the 1964GEPD profile before adding launcher polish.
-3. Decide whether the next mod milestone Adapter-bridges ROM patches/cheats or moves to a native/decomp runtime with comparable rendering.
-4. Resume the schema-backed weapon-property registry only after the target mod runtime is chosen.
+1. Human-test Dam plus two renderer-stress missions with the Q Branch quality presets and record remaining input/audio/render defects.
+2. Add a clean-machine packaging job with a complete plugin/asset license inventory and checksummed artifacts.
+3. Move the Mouse Injector source into a reproducible plugin build, then add controller and accessibility presets.
+4. Choose the first mod bridge: structured cheats/ROM patches in 1964GEPD, or a semantic API hosted by a quality-equivalent native runtime.
 
 Android remains a later nice-to-have. Linux follows only after a quality-capable cross-platform runtime is selected; 1964GEPD is Windows-only, while MGB64's portable paths remain experimental.

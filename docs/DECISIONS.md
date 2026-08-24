@@ -187,3 +187,21 @@ Each decision that changes should preserve the old entry, add a superseding entr
 **Decision:** download the official release and verify SHA-1 plus SHA-256. Do not commit or independently repackage its binaries.
 
 **Why:** the core and Mouse Injector include source/licenses, but the aggregate bundle contains plugins and cached texture data under multiple terms. Direct upstream retrieval preserves provenance while a file-level redistribution audit remains open.
+
+## D-021 — Fork and build the 1964 quality core
+
+**Status:** Accepted; supersedes D-013 for repository code and narrows D-020  
+**Decision:** maintain this repository as a GPL-2.0 fork of 1964GEPD. Build a side-by-side `1964-qbranch.exe` with Visual Studio 2022 and prefer it at launch, while retaining the official executable as a compatibility fallback.
+
+**Evidence:** the modern Win32 project compiles the inherited C/dynarec source, the resulting executable stays responsive, and the verified US ROM entered `GOLDENEYE - Running` through the launcher. A separate regression proved quoted ROM directory and filename arguments.
+
+**Consequence:** core fixes and QoL work are now genuinely ours to maintain. The official bundle remains an acquisition source for plugins and assets until each one has a reproducible build or an explicit redistribution classification.
+
+## D-022 — Quality and latency controls are launcher-owned policy
+
+**Status:** Accepted  
+**Decision:** persist display, renderer, Modern FPS, focus, head-roll, FOV, backup, and diagnostic settings in launcher schema v3 and reapply them immediately before play.
+
+**Why:** a stable player experience cannot depend on undocumented plugin dialog state. Presets expose useful tradeoffs while keeping a known-good reset path.
+
+**Consequence:** advanced plugin dialogs remain diagnostic tools. Any future renderer/input implementation must map the same player-facing settings or explicitly report unsupported options.

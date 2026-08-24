@@ -71,6 +71,15 @@ function Test-QualityRuntime {
     return $true
 }
 
+function Get-QualityRuntimeExecutable {
+    param([Parameter(Mandatory)][string]$InstallRoot)
+
+    $runtime = Join-Path $InstallRoot '1964'
+    $qBranch = Join-Path $runtime '1964-qbranch.exe'
+    if (Test-Path -LiteralPath $qBranch -PathType Leaf) { return $qBranch }
+    return (Join-Path $runtime '1964.exe')
+}
+
 function Install-QualityRuntime {
     param(
         [Parameter(Mandatory)][string]$InstallRoot,
@@ -157,7 +166,7 @@ function Get-GoldenEyeLauncherSettings {
 
     $display = Get-PrimaryDisplaySize
     $settings = [ordered]@{
-        schemaVersion = 2
+        schemaVersion = 3
         romPath = $RomPath
         preferredRuntime = 'Quality'
         displayMode = 'Fullscreen'
@@ -166,11 +175,20 @@ function Get-GoldenEyeLauncherSettings {
         windowedWidth = 1280
         windowedHeight = 720
         verticalSync = $false
+        antiAliasing = 'MSAA4'
+        anisotropy = 16
+        aspectRatio = 'Widescreen'
+        texturePack = $true
+        showFps = $false
         controlPreset = 'ModernFPS'
         mouseSensitivityPercent = 100
         mouseAcceleration = $false
         invertMouseY = $false
         fieldOfView = 60
+        disableHeadRoll = $true
+        pauseWhenInactive = $true
+        backupSaves = $true
+        backupRetention = 10
     }
 
     $statePath = Join-Path $InstallRoot 'launcher-state.json'
@@ -184,6 +202,7 @@ function Get-GoldenEyeLauncherSettings {
         }
     }
     if ($RomPath) { $settings.romPath = $RomPath }
+    $settings.schemaVersion = 3
     [pscustomobject]$settings
 }
 
@@ -202,6 +221,15 @@ function Save-GoldenEyeLauncherSettings {
     if ($Settings.controlPreset -notin @('ModernFPS', 'Hybrid', 'ClassicInjector')) {
         throw "Unsupported control preset '$($Settings.controlPreset)'."
     }
+    if ($Settings.antiAliasing -notin @('Off', 'FXAA', 'MSAA2', 'MSAA4', 'MSAA8')) {
+        throw "Unsupported anti-aliasing mode '$($Settings.antiAliasing)'."
+    }
+    if ([int]$Settings.anisotropy -notin @(0, 2, 4, 8, 16)) {
+        throw "Unsupported anisotropic filtering level '$($Settings.anisotropy)'."
+    }
+    if ($Settings.aspectRatio -notin @('Widescreen', 'Original4x3', 'Stretch', 'Adjust')) {
+        throw "Unsupported aspect ratio '$($Settings.aspectRatio)'."
+    }
     foreach ($dimension in @('fullscreenWidth', 'fullscreenHeight', 'windowedWidth', 'windowedHeight')) {
         if ([int]$Settings.$dimension -lt 320 -or [int]$Settings.$dimension -gt 16384) {
             throw "Display dimension '$dimension' is outside the supported range."
@@ -213,10 +241,13 @@ function Save-GoldenEyeLauncherSettings {
     if ([int]$Settings.fieldOfView -lt 45 -or [int]$Settings.fieldOfView -gt 120) {
         throw 'Vertical field of view must be between 45 and 120 degrees.'
     }
+    if ([int]$Settings.backupRetention -lt 1 -or [int]$Settings.backupRetention -gt 50) {
+        throw 'Save-backup retention must be between 1 and 50 snapshots.'
+    }
 
     New-Item -ItemType Directory -Path $InstallRoot -Force | Out-Null
     $normalized = [ordered]@{
-        schemaVersion = 2
+        schemaVersion = 3
         romPath = $rom.Path
         preferredRuntime = 'Quality'
         displayMode = [string]$Settings.displayMode
@@ -225,11 +256,20 @@ function Save-GoldenEyeLauncherSettings {
         windowedWidth = [int]$Settings.windowedWidth
         windowedHeight = [int]$Settings.windowedHeight
         verticalSync = [bool]$Settings.verticalSync
+        antiAliasing = [string]$Settings.antiAliasing
+        anisotropy = [int]$Settings.anisotropy
+        aspectRatio = [string]$Settings.aspectRatio
+        texturePack = [bool]$Settings.texturePack
+        showFps = [bool]$Settings.showFps
         controlPreset = [string]$Settings.controlPreset
         mouseSensitivityPercent = [int]$Settings.mouseSensitivityPercent
         mouseAcceleration = [bool]$Settings.mouseAcceleration
         invertMouseY = [bool]$Settings.invertMouseY
         fieldOfView = [int]$Settings.fieldOfView
+        disableHeadRoll = [bool]$Settings.disableHeadRoll
+        pauseWhenInactive = [bool]$Settings.pauseWhenInactive
+        backupSaves = [bool]$Settings.backupSaves
+        backupRetention = [int]$Settings.backupRetention
     }
     $normalized | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $InstallRoot 'launcher-state.json') -Encoding UTF8
     [pscustomobject]$normalized
@@ -240,10 +280,16 @@ function Set-ConfigEntry {
         [Parameter(Mandatory)][string]$Content,
         [Parameter(Mandatory)][string]$Key,
         [Parameter(Mandatory)][string]$Value,
-        [Parameter(Mandatory)][string]$Separator
+        [Parameter(Mandatory)][string]$Separator,
+        [switch]$AppendIfMissing
     )
     $pattern = '(?m)^' + [regex]::Escape($Key) + '.*$'
-    if (-not [regex]::IsMatch($Content, $pattern)) { throw "Configuration entry '$Key' was not found." }
+    if (-not [regex]::IsMatch($Content, $pattern)) {
+        if ($AppendIfMissing) {
+            return $Content.TrimEnd() + [Environment]::NewLine + $Key + $Separator + $Value + [Environment]::NewLine
+        }
+        throw "Configuration entry '$Key' was not found."
+    }
     [regex]::Replace($Content, $pattern, ($Key + $Separator + $Value), 1)
 }
 
@@ -337,30 +383,155 @@ function Set-GoldenEyeRuntimeSettings {
     $runtimeConfig = Set-ConfigEntry -Content $runtimeConfig -Key 'BorderlessFullscreen' -Value $borderless -Separator ' '
     $runtimeConfig = Set-ConfigEntry -Content $runtimeConfig -Key 'ClientWindowWidth' -Value ([string][int]$Settings.windowedWidth) -Separator ' '
     $runtimeConfig = Set-ConfigEntry -Content $runtimeConfig -Key 'ClientWindowHeight' -Value ([string][int]$Settings.windowedHeight) -Separator ' '
+    $runtimeConfig = Set-ConfigEntry -Content $runtimeConfig -Key 'GEDisableHeadRoll' -Value $(if ([bool]$Settings.disableHeadRoll) { '1' } else { '0' }) -Separator ' '
+    $runtimeConfig = Set-ConfigEntry -Content $runtimeConfig -Key 'PauseWhenInactive' -Value $(if ([bool]$Settings.pauseWhenInactive) { '1' } else { '0' }) -Separator ' '
     Set-Content -LiteralPath $runtimeConfigPath -Value $runtimeConfig -Encoding ASCII
 
     $videoConfigPath = Join-Path $InstallRoot '1964\plugin\GLideN64.ini'
     $videoConfig = Get-Content -LiteralPath $videoConfigPath -Raw
+    $multisampling = switch ([string]$Settings.antiAliasing) {
+        'MSAA2' { 2 }
+        'MSAA4' { 4 }
+        'MSAA8' { 8 }
+        default { 0 }
+    }
+    $fxaa = if ($Settings.antiAliasing -eq 'FXAA') { 1 } else { 0 }
+    $aspect = @{
+        Stretch = 0
+        Original4x3 = 1
+        Widescreen = 2
+        Adjust = 3
+    }[[string]$Settings.aspectRatio]
     $entries = [ordered]@{
         'video\fullscreenWidth' = [int]$Settings.fullscreenWidth
         'video\fullscreenHeight' = [int]$Settings.fullscreenHeight
         'video\windowedWidth' = [int]$Settings.windowedWidth
         'video\windowedHeight' = [int]$Settings.windowedHeight
         'video\verticalSync' = $(if ([bool]$Settings.verticalSync) { 1 } else { 0 })
+        'video\multisampling' = $multisampling
+        'video\fxaa' = $fxaa
+        'texture\maxAnisotropy' = [int]$Settings.anisotropy
+        'frameBufferEmulation\aspect' = $aspect
+        'textureFilter\txHiresEnable' = $(if ([bool]$Settings.texturePack) { 1 } else { 0 })
+        'onScreenDisplay\showFPS' = $(if ([bool]$Settings.showFps) { 1 } else { 0 })
     }
     foreach ($entry in $entries.GetEnumerator()) {
-        $videoConfig = Set-ConfigEntry -Content $videoConfig -Key $entry.Key -Value ([string]$entry.Value) -Separator '='
+        $videoConfig = Set-ConfigEntry -Content $videoConfig -Key $entry.Key -Value ([string]$entry.Value) -Separator '=' -AppendIfMissing
     }
     Set-Content -LiteralPath $videoConfigPath -Value $videoConfig -Encoding ASCII
 
     Set-MouseInjectorProfile -Path (Join-Path $InstallRoot '1964\plugin\mouseinjector.ini') -Settings $Settings
 }
 
+function Backup-GoldenEyeSaves {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$InstallRoot,
+        [int]$Retention = 10
+    )
+
+    $saveDirectory = Join-Path $InstallRoot '1964\save'
+    if (-not (Test-Path -LiteralPath $saveDirectory -PathType Container)) { return $null }
+
+    $saveFiles = @(Get-ChildItem -LiteralPath $saveDirectory -File | Where-Object {
+        $_.Extension -match '^\.(eep|sra|fla|mpk|m\d+|sav|state)$'
+    } | Sort-Object Name)
+    if ($saveFiles.Count -eq 0) { return $null }
+
+    $fileRecords = @($saveFiles | ForEach-Object {
+        [ordered]@{
+            name = $_.Name
+            length = $_.Length
+            sha256 = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToUpperInvariant()
+        }
+    })
+    $signature = ($fileRecords | ForEach-Object { "$($_.name):$($_.length):$($_.sha256)" }) -join '|'
+
+    $backupRoot = Join-Path $InstallRoot 'save-backups'
+    $previous = @(Get-ChildItem -LiteralPath $backupRoot -Directory -ErrorAction SilentlyContinue | Sort-Object Name -Descending | Select-Object -First 1)
+    if ($previous.Count -gt 0) {
+        $previousManifest = Join-Path $previous[0].FullName 'manifest.json'
+        if (Test-Path -LiteralPath $previousManifest -PathType Leaf) {
+            try {
+                $previousData = Get-Content -LiteralPath $previousManifest -Raw | ConvertFrom-Json
+                if ($previousData.signature -eq $signature) { return $previous[0].FullName }
+            }
+            catch {
+                Write-Warning "Ignoring unreadable save-backup manifest '$previousManifest'."
+            }
+        }
+    }
+
+    New-Item -ItemType Directory -Path $backupRoot -Force | Out-Null
+    $snapshot = Join-Path $backupRoot ([DateTime]::Now.ToString('yyyyMMdd-HHmmss-fff'))
+    New-Item -ItemType Directory -Path $snapshot | Out-Null
+    foreach ($file in $saveFiles) {
+        Copy-Item -LiteralPath $file.FullName -Destination $snapshot
+    }
+    [ordered]@{
+        schemaVersion = 1
+        createdAt = [DateTime]::UtcNow.ToString('o')
+        signature = $signature
+        files = $fileRecords
+    } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $snapshot 'manifest.json') -Encoding UTF8
+
+    @(Get-ChildItem -LiteralPath $backupRoot -Directory | Sort-Object Name -Descending | Select-Object -Skip $Retention) | ForEach-Object {
+        Remove-Item -LiteralPath $_.FullName -Recurse -Force
+    }
+    return $snapshot
+}
+
+function Get-GoldenEyeDiagnostics {
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][string]$InstallRoot)
+
+    $lines = New-Object System.Collections.Generic.List[string]
+    $lines.Add('1964 GEPD Q Branch diagnostics')
+    $lines.Add("Generated: $([DateTime]::UtcNow.ToString('o'))")
+    $lines.Add("Windows: $([Environment]::OSVersion.VersionString)")
+    $lines.Add("PowerShell: $($PSVersionTable.PSVersion)")
+    $lines.Add("Install root: $InstallRoot")
+    $lines.Add("Runtime complete: $(Test-QualityRuntime -InstallRoot $InstallRoot)")
+    $selectedExecutable = Get-QualityRuntimeExecutable -InstallRoot $InstallRoot
+    $lines.Add("Selected core: $(Split-Path -Leaf $selectedExecutable)")
+
+    $diagnosticFiles = @('1964\1964.exe', '1964\plugin\GLideN64.dll', '1964\plugin\Mouse_Injector.dll', '1964\plugin\AziAudio.dll')
+    if (Test-Path -LiteralPath (Join-Path $InstallRoot '1964\1964-qbranch.exe') -PathType Leaf) {
+        $diagnosticFiles = @('1964\1964-qbranch.exe') + $diagnosticFiles
+    }
+    foreach ($relativePath in $diagnosticFiles) {
+        $path = Join-Path $InstallRoot $relativePath
+        if (Test-Path -LiteralPath $path -PathType Leaf) {
+            $hash = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToUpperInvariant()
+            $lines.Add("$relativePath SHA-256 $hash")
+        }
+        else {
+            $lines.Add("$relativePath MISSING")
+        }
+    }
+
+    $statePath = Join-Path $InstallRoot 'launcher-state.json'
+    if (Test-Path -LiteralPath $statePath -PathType Leaf) {
+        $state = Get-GoldenEyeLauncherSettings -InstallRoot $InstallRoot
+        $lines.Add("Settings schema: $($state.schemaVersion)")
+        $lines.Add("Display: $($state.displayMode) $($state.fullscreenWidth)x$($state.fullscreenHeight)")
+        $lines.Add("Graphics: $($state.antiAliasing), $($state.anisotropy)x AF, $($state.aspectRatio), texture pack $($state.texturePack)")
+        $lines.Add("Controls: $($state.controlPreset), sensitivity $($state.mouseSensitivityPercent)%, FOV $($state.fieldOfView)")
+        if ($state.romPath -and (Test-Path -LiteralPath $state.romPath -PathType Leaf)) {
+            $rom = Get-GoldenEyeRomInfo -RomPath $state.romPath
+            $lines.Add("ROM: verified $($rom.Format), SHA-1 $($rom.Sha1)")
+        }
+    }
+    return ($lines -join [Environment]::NewLine)
+}
+
 function Get-RomLaunchAlias {
     param([Parameter(Mandatory)]$RomInfo)
 
     $source = $RomInfo.Path
-    if ((Split-Path -Leaf $source) -notmatch '\s') { return $source }
+    $sourceName = Split-Path -Leaf $source
+    $expectedExtension = ".$($RomInfo.Format)"
+    if ($sourceName -notmatch '\s' -and [System.IO.Path]::GetExtension($sourceName) -ieq $expectedExtension) { return $source }
     $alias = Join-Path (Split-Path -Parent $source) ("GoldenEye007USA.$($RomInfo.Format)")
     if (Test-Path -LiteralPath $alias) {
         $aliasHash = (Get-FileHash -LiteralPath $alias -Algorithm SHA1).Hash.ToUpperInvariant()
@@ -368,12 +539,12 @@ function Get-RomLaunchAlias {
         return $alias
     }
 
-    Write-Host "Creating a no-space NTFS hard-link beside the ROM for 1964's legacy command-line parser..."
+    Write-Host 'Creating a byte-order-correct ROM hard-link beside the original ROM...'
     try {
         New-Item -ItemType HardLink -Path $alias -Target $source | Out-Null
     }
     catch {
-        throw "1964 cannot parse spaces in ROM filenames, and a hard-link alias could not be created. Rename the ROM without spaces or create '$alias' as a hard link. $($_.Exception.Message)"
+        throw "1964 needs a ROM alias whose extension matches its byte order. Rename the ROM to use $expectedExtension or create '$alias' as a hard link. $($_.Exception.Message)"
     }
     return $alias
 }
@@ -465,21 +636,19 @@ function Start-QualityRuntime {
     Set-GoldenEyeRuntimeSettings -InstallRoot $InstallRoot -Settings $Settings
     $romAlias = Get-RomLaunchAlias -RomInfo $RomInfo
     $romDirectory = Split-Path -Parent $romAlias
-    if ($romDirectory -match '\s') {
+    $runtimeExecutable = Get-QualityRuntimeExecutable -InstallRoot $InstallRoot
+    $usingQBranch = (Split-Path -Leaf $runtimeExecutable) -ieq '1964-qbranch.exe'
+    if (-not $usingQBranch -and $romDirectory -match '\s') {
         throw "1964's command-line parser cannot use a ROM directory containing spaces: '$romDirectory'. Move the ROM to a path such as D:\Roms."
     }
 
     $runtime = Join-Path $InstallRoot '1964'
-    $arguments = @(
-        '-r', $romDirectory,
-        '-g', (Split-Path -Leaf $romAlias),
-        '-v', 'GLideN64.dll',
-        '-a', 'AziAudio.dll',
-        '-c', 'Mouse_Injector.dll',
-        '-o', '9'
-    )
-    if ($Settings.displayMode -ne 'Windowed') { $arguments += '-f' }
-    $process = Start-Process -FilePath (Join-Path $runtime '1964.exe') -WorkingDirectory $runtime -ArgumentList $arguments -PassThru
+    $arguments = '-r "{0}" -g "{1}" -v GLideN64.dll -a AziAudio.dll -c Mouse_Injector.dll -o 9' -f $romDirectory, (Split-Path -Leaf $romAlias)
+    if ($Settings.displayMode -ne 'Windowed') { $arguments += ' -f' }
+    if ([bool]$Settings.backupSaves) {
+        [void](Backup-GoldenEyeSaves -InstallRoot $InstallRoot -Retention ([int]$Settings.backupRetention))
+    }
+    $process = Start-Process -FilePath $runtimeExecutable -WorkingDirectory $runtime -ArgumentList $arguments -PassThru
     if ($Settings.displayMode -eq 'Windowed') {
         Initialize-QualityWindowInputCapture -Process $process
     }
@@ -542,4 +711,4 @@ function Start-GoldenEyeRuntime {
     return Start-ExperimentalRuntime -Executable $ExperimentalExecutable -RomInfo $rom -Wait:$Wait
 }
 
-Export-ModuleMember -Function Get-GoldenEyeRomInfo, Get-GoldenEyeLauncherSettings, Save-GoldenEyeLauncherSettings, Set-GoldenEyeRuntimeSettings, Install-GoldenEyeRuntime, Start-GoldenEyeRuntime
+Export-ModuleMember -Function Get-GoldenEyeRomInfo, Get-GoldenEyeLauncherSettings, Save-GoldenEyeLauncherSettings, Set-GoldenEyeRuntimeSettings, Backup-GoldenEyeSaves, Get-GoldenEyeDiagnostics, Get-QualityRuntimeExecutable, Install-GoldenEyeRuntime, Start-GoldenEyeRuntime

@@ -57,7 +57,7 @@ function New-SectionRule {
     param([int]$Y)
     $rule = New-Object System.Windows.Forms.Panel
     $rule.Location = New-Object System.Drawing.Point(38, $Y)
-    $rule.Size = New-Object System.Drawing.Size(610, 1)
+    $rule.Size = New-Object System.Drawing.Size(670, 1)
     $rule.BackColor = [System.Drawing.Color]::FromArgb(205, 199, 183)
     $rule
 }
@@ -67,6 +67,21 @@ function Style-Field {
     $Control.Font = New-Font -Size 10
     $Control.BackColor = $paperRaised
     $Control.ForeColor = $ink
+}
+
+function New-UtilityButton {
+    param([string]$Text, [int]$X, [int]$Y, [int]$Width = 135)
+    $button = New-Object System.Windows.Forms.Button
+    $button.Text = $Text
+    $button.Location = New-Object System.Drawing.Point($X, $Y)
+    $button.Size = New-Object System.Drawing.Size($Width, 34)
+    $button.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $button.FlatAppearance.BorderColor = $olive
+    $button.BackColor = $paperRaised
+    $button.ForeColor = $ink
+    $button.Font = New-Font -Size 8.5 -Style Bold
+    $button.Cursor = [System.Windows.Forms.Cursors]::Hand
+    $button
 }
 
 function Add-ResolutionOption {
@@ -84,9 +99,9 @@ function Get-Resolution {
 
 $form = New-Object System.Windows.Forms.Form
 $form.Text = 'GoldenEye // Q Branch Launcher'
-$form.ClientSize = New-Object System.Drawing.Size(1040, 700)
-$form.MinimumSize = New-Object System.Drawing.Size(1056, 739)
-$form.MaximumSize = New-Object System.Drawing.Size(1056, 739)
+$form.ClientSize = New-Object System.Drawing.Size(1080, 760)
+$form.MinimumSize = New-Object System.Drawing.Size(1096, 799)
+$form.MaximumSize = New-Object System.Drawing.Size(1096, 799)
 $form.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
 $form.BackColor = $paper
 $form.ForeColor = $ink
@@ -96,7 +111,7 @@ $form.KeyPreview = $true
 
 $left = New-Object System.Windows.Forms.Panel
 $left.Location = New-Object System.Drawing.Point(0, 0)
-$left.Size = New-Object System.Drawing.Size(330, 700)
+$left.Size = New-Object System.Drawing.Size(330, 760)
 $left.BackColor = $charcoal
 $form.Controls.Add($left)
 
@@ -134,12 +149,12 @@ foreach ($binding in $bindings) {
     $bindingY += 32
 }
 
-$leftStatus = New-TextLabel -Text 'ROM CHECK PENDING' -X 31 -Y 641 -Width 265 -Height 24 -Size 9 -Color ([System.Drawing.Color]::FromArgb(196, 159, 91)) -Style Bold
+$leftStatus = New-TextLabel -Text 'ROM CHECK PENDING' -X 31 -Y 701 -Width 265 -Height 24 -Size 9 -Color ([System.Drawing.Color]::FromArgb(196, 159, 91)) -Style Bold
 $left.Controls.Add($leftStatus)
 
 $main = New-Object System.Windows.Forms.Panel
 $main.Location = New-Object System.Drawing.Point(330, 0)
-$main.Size = New-Object System.Drawing.Size(710, 700)
+$main.Size = New-Object System.Drawing.Size(750, 760)
 $main.BackColor = $paper
 $form.Controls.Add($main)
 
@@ -149,7 +164,7 @@ $main.Controls.Add((New-TextLabel -Text 'Tune the game once. These settings are 
 $main.Controls.Add((New-TextLabel -Text 'GAME FILE' -X 40 -Y 113 -Width 130 -Height 20 -Size 9 -Color $olive -Style Bold))
 $romBox = New-Object System.Windows.Forms.TextBox
 $romBox.Location = New-Object System.Drawing.Point(40, 139)
-$romBox.Size = New-Object System.Drawing.Size(494, 27)
+$romBox.Size = New-Object System.Drawing.Size(514, 27)
 $romBox.Text = [string]$settings.romPath
 $romBox.BorderStyle = [System.Windows.Forms.BorderStyle]::FixedSingle
 Style-Field $romBox
@@ -157,8 +172,8 @@ $main.Controls.Add($romBox)
 
 $browseButton = New-Object System.Windows.Forms.Button
 $browseButton.Text = 'CHOOSE ROM'
-$browseButton.Location = New-Object System.Drawing.Point(545, 137)
-$browseButton.Size = New-Object System.Drawing.Size(103, 31)
+$browseButton.Location = New-Object System.Drawing.Point(565, 137)
+$browseButton.Size = New-Object System.Drawing.Size(143, 31)
 $browseButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $browseButton.FlatAppearance.BorderColor = $olive
 $browseButton.BackColor = $paper
@@ -170,59 +185,129 @@ $romStatus = New-TextLabel -Text 'Choose the unmodified US GoldenEye ROM.' -X 40
 $main.Controls.Add($romStatus)
 $main.Controls.Add((New-SectionRule -Y 211))
 
-$main.Controls.Add((New-TextLabel -Text 'DISPLAY' -X 40 -Y 235 -Width 130 -Height 20 -Size 9 -Color $olive -Style Bold))
-$main.Controls.Add((New-TextLabel -Text 'Mode' -X 40 -Y 269 -Width 90 -Height 20 -Size 9 -Color $inkSoft))
+$tabs = New-Object System.Windows.Forms.TabControl
+$tabs.Location = New-Object System.Drawing.Point(38, 218)
+$tabs.Size = New-Object System.Drawing.Size(674, 410)
+$tabs.Font = New-Font -Size 9.5 -Style Bold
+$main.Controls.Add($tabs)
+
+$displayTab = New-Object System.Windows.Forms.TabPage
+$displayTab.Text = '  DISPLAY  '
+$displayTab.BackColor = $paper
+$displayTab.UseVisualStyleBackColor = $false
+$tabs.TabPages.Add($displayTab)
+
+$controlsTab = New-Object System.Windows.Forms.TabPage
+$controlsTab.Text = '  CONTROLS  '
+$controlsTab.BackColor = $paper
+$controlsTab.UseVisualStyleBackColor = $false
+$tabs.TabPages.Add($controlsTab)
+
+$systemTab = New-Object System.Windows.Forms.TabPage
+$systemTab.Text = '  SAVES & TOOLS  '
+$systemTab.BackColor = $paper
+$systemTab.UseVisualStyleBackColor = $false
+$tabs.TabPages.Add($systemTab)
+
+$displayTab.Controls.Add((New-TextLabel -Text 'WINDOW' -X 22 -Y 22 -Width 130 -Height 20 -Size 9 -Color $olive -Style Bold))
+$displayTab.Controls.Add((New-TextLabel -Text 'Mode' -X 22 -Y 55 -Width 90 -Height 20 -Size 9 -Color $inkSoft))
 $displayCombo = New-Object System.Windows.Forms.ComboBox
-$displayCombo.Location = New-Object System.Drawing.Point(40, 292)
+$displayCombo.Location = New-Object System.Drawing.Point(22, 78)
 $displayCombo.Size = New-Object System.Drawing.Size(185, 28)
 $displayCombo.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
 @('Fullscreen', 'Borderless', 'Windowed') | ForEach-Object { [void]$displayCombo.Items.Add($_) }
 $displayCombo.SelectedItem = [string]$settings.displayMode
 Style-Field $displayCombo
-$main.Controls.Add($displayCombo)
+$displayTab.Controls.Add($displayCombo)
 
-$main.Controls.Add((New-TextLabel -Text 'Resolution' -X 244 -Y 269 -Width 120 -Height 20 -Size 9 -Color $inkSoft))
+$displayTab.Controls.Add((New-TextLabel -Text 'Resolution' -X 225 -Y 55 -Width 120 -Height 20 -Size 9 -Color $inkSoft))
 $resolutionCombo = New-Object System.Windows.Forms.ComboBox
-$resolutionCombo.Location = New-Object System.Drawing.Point(244, 292)
+$resolutionCombo.Location = New-Object System.Drawing.Point(225, 78)
 $resolutionCombo.Size = New-Object System.Drawing.Size(205, 28)
 $resolutionCombo.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
 Add-ResolutionOption -Combo $resolutionCombo -Width $screen.Width -Height $screen.Height -Native
 @(@(3840,2160), @(2560,1440), @(1920,1080), @(1600,900), @(1280,720)) | ForEach-Object { Add-ResolutionOption -Combo $resolutionCombo -Width $_[0] -Height $_[1] }
 Style-Field $resolutionCombo
-$main.Controls.Add($resolutionCombo)
+$displayTab.Controls.Add($resolutionCombo)
 
 $vsyncCheck = New-Object System.Windows.Forms.CheckBox
-$vsyncCheck.Text = 'V-sync'
-$vsyncCheck.Location = New-Object System.Drawing.Point(478, 291)
-$vsyncCheck.Size = New-Object System.Drawing.Size(95, 30)
+$vsyncCheck.Text = 'V-sync (may add latency)'
+$vsyncCheck.Location = New-Object System.Drawing.Point(453, 76)
+$vsyncCheck.Size = New-Object System.Drawing.Size(185, 30)
 $vsyncCheck.Checked = [bool]$settings.verticalSync
 $vsyncCheck.Font = New-Font -Size 9.5
 $vsyncCheck.ForeColor = $ink
-$main.Controls.Add($vsyncCheck)
+$displayTab.Controls.Add($vsyncCheck)
 
-$latencyNote = New-TextLabel -Text 'V-sync is off by default for lower mouse latency.' -X 40 -Y 333 -Width 500 -Height 20 -Size 8.5 -Color $inkSoft
-$main.Controls.Add($latencyNote)
-$main.Controls.Add((New-SectionRule -Y 363))
+$displayTab.Controls.Add((New-TextLabel -Text 'IMAGE QUALITY' -X 22 -Y 137 -Width 160 -Height 20 -Size 9 -Color $olive -Style Bold))
+$displayTab.Controls.Add((New-TextLabel -Text 'Anti-aliasing' -X 22 -Y 170 -Width 120 -Height 20 -Size 9 -Color $inkSoft))
+$aaCombo = New-Object System.Windows.Forms.ComboBox
+$aaCombo.Location = New-Object System.Drawing.Point(22, 193)
+$aaCombo.Size = New-Object System.Drawing.Size(185, 28)
+$aaCombo.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
+@('Off  -  SHARPEST', 'FXAA  -  SOFT', '2x MSAA', '4x MSAA  -  QUALITY', '8x MSAA') | ForEach-Object { [void]$aaCombo.Items.Add($_) }
+$aaIndex = @{ Off = 0; FXAA = 1; MSAA2 = 2; MSAA4 = 3; MSAA8 = 4 }
+$aaCombo.SelectedIndex = $aaIndex[[string]$settings.antiAliasing]
+Style-Field $aaCombo
+$displayTab.Controls.Add($aaCombo)
 
-$main.Controls.Add((New-TextLabel -Text 'CONTROLS' -X 40 -Y 387 -Width 130 -Height 20 -Size 9 -Color $olive -Style Bold))
-$main.Controls.Add((New-TextLabel -Text 'Behavior' -X 40 -Y 421 -Width 100 -Height 20 -Size 9 -Color $inkSoft))
+$displayTab.Controls.Add((New-TextLabel -Text 'Anisotropic filtering' -X 225 -Y 170 -Width 160 -Height 20 -Size 9 -Color $inkSoft))
+$anisotropyCombo = New-Object System.Windows.Forms.ComboBox
+$anisotropyCombo.Location = New-Object System.Drawing.Point(225, 193)
+$anisotropyCombo.Size = New-Object System.Drawing.Size(185, 28)
+$anisotropyCombo.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
+@('Off', '2x', '4x', '8x', '16x  -  RECOMMENDED') | ForEach-Object { [void]$anisotropyCombo.Items.Add($_) }
+$anisotropyCombo.SelectedIndex = @{ 0 = 0; 2 = 1; 4 = 2; 8 = 3; 16 = 4 }[[int]$settings.anisotropy]
+Style-Field $anisotropyCombo
+$displayTab.Controls.Add($anisotropyCombo)
+
+$displayTab.Controls.Add((New-TextLabel -Text 'Aspect ratio' -X 428 -Y 170 -Width 120 -Height 20 -Size 9 -Color $inkSoft))
+$aspectCombo = New-Object System.Windows.Forms.ComboBox
+$aspectCombo.Location = New-Object System.Drawing.Point(428, 193)
+$aspectCombo.Size = New-Object System.Drawing.Size(205, 28)
+$aspectCombo.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
+@('Widescreen 16:9', 'Original 4:3', 'Stretch to fill', 'Auto adjust') | ForEach-Object { [void]$aspectCombo.Items.Add($_) }
+$aspectCombo.SelectedIndex = @{ Widescreen = 0; Original4x3 = 1; Stretch = 2; Adjust = 3 }[[string]$settings.aspectRatio]
+Style-Field $aspectCombo
+$displayTab.Controls.Add($aspectCombo)
+
+$texturePackCheck = New-Object System.Windows.Forms.CheckBox
+$texturePackCheck.Text = 'Enhanced HUD texture cache'
+$texturePackCheck.Location = New-Object System.Drawing.Point(22, 250)
+$texturePackCheck.Size = New-Object System.Drawing.Size(235, 28)
+$texturePackCheck.Checked = [bool]$settings.texturePack
+$texturePackCheck.Font = New-Font -Size 9.5
+$displayTab.Controls.Add($texturePackCheck)
+
+$fpsCheck = New-Object System.Windows.Forms.CheckBox
+$fpsCheck.Text = 'Show FPS overlay'
+$fpsCheck.Location = New-Object System.Drawing.Point(275, 250)
+$fpsCheck.Size = New-Object System.Drawing.Size(175, 28)
+$fpsCheck.Checked = [bool]$settings.showFps
+$fpsCheck.Font = New-Font -Size 9.5
+$displayTab.Controls.Add($fpsCheck)
+
+$displayTab.Controls.Add((New-TextLabel -Text '4x MSAA and 16x filtering improve geometry and distant textures. Disable AA first if your GPU struggles.' -X 22 -Y 301 -Width 610 -Height 45 -Size 8.5 -Color $inkSoft))
+
+$controlsTab.Controls.Add((New-TextLabel -Text 'AIM MODEL' -X 22 -Y 22 -Width 130 -Height 20 -Size 9 -Color $olive -Style Bold))
+$controlsTab.Controls.Add((New-TextLabel -Text 'Behavior' -X 22 -Y 55 -Width 100 -Height 20 -Size 9 -Color $inkSoft))
 $controlsCombo = New-Object System.Windows.Forms.ComboBox
-$controlsCombo.Location = New-Object System.Drawing.Point(40, 444)
+$controlsCombo.Location = New-Object System.Drawing.Point(22, 78)
 $controlsCombo.Size = New-Object System.Drawing.Size(255, 28)
 $controlsCombo.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
 @('Modern FPS  -  RECOMMENDED', 'GoldenEye hybrid', 'Classic Mouse Injector') | ForEach-Object { [void]$controlsCombo.Items.Add($_) }
 $presetIndex = @{ ModernFPS = 0; Hybrid = 1; ClassicInjector = 2 }
 $controlsCombo.SelectedIndex = $presetIndex[[string]$settings.controlPreset]
 Style-Field $controlsCombo
-$main.Controls.Add($controlsCombo)
+$controlsTab.Controls.Add($controlsCombo)
 
-$main.Controls.Add((New-TextLabel -Text 'Mouse sensitivity' -X 325 -Y 421 -Width 150 -Height 20 -Size 9 -Color $inkSoft))
-$sensitivityValue = New-TextLabel -Text "$($settings.mouseSensitivityPercent)%" -X 566 -Y 421 -Width 80 -Height 20 -Size 9 -Color $red -Style Bold
+$controlsTab.Controls.Add((New-TextLabel -Text 'Mouse sensitivity' -X 305 -Y 55 -Width 150 -Height 20 -Size 9 -Color $inkSoft))
+$sensitivityValue = New-TextLabel -Text "$($settings.mouseSensitivityPercent)%" -X 555 -Y 55 -Width 80 -Height 20 -Size 9 -Color $red -Style Bold
 $sensitivityValue.TextAlign = [System.Drawing.ContentAlignment]::TopRight
-$main.Controls.Add($sensitivityValue)
+$controlsTab.Controls.Add($sensitivityValue)
 
 $sensitivity = New-Object System.Windows.Forms.TrackBar
-$sensitivity.Location = New-Object System.Drawing.Point(318, 442)
+$sensitivity.Location = New-Object System.Drawing.Point(298, 76)
 $sensitivity.Size = New-Object System.Drawing.Size(332, 38)
 $sensitivity.Minimum = 5
 $sensitivity.Maximum = 50
@@ -230,49 +315,96 @@ $sensitivity.TickFrequency = 5
 $sensitivity.SmallChange = 1
 $sensitivity.LargeChange = 5
 $sensitivity.Value = [math]::Max(5, [math]::Min(50, [math]::Round([int]$settings.mouseSensitivityPercent / 5)))
-$main.Controls.Add($sensitivity)
+$controlsTab.Controls.Add($sensitivity)
 
-$controlDescription = New-TextLabel -Text '' -X 40 -Y 486 -Width 608 -Height 22 -Size 8.5 -Color $inkSoft
-$main.Controls.Add($controlDescription)
+$controlDescription = New-TextLabel -Text '' -X 22 -Y 125 -Width 608 -Height 36 -Size 8.5 -Color $inkSoft
+$controlsTab.Controls.Add($controlDescription)
 
 $invertCheck = New-Object System.Windows.Forms.CheckBox
 $invertCheck.Text = 'Invert mouse Y'
-$invertCheck.Location = New-Object System.Drawing.Point(40, 518)
+$invertCheck.Location = New-Object System.Drawing.Point(22, 180)
 $invertCheck.Size = New-Object System.Drawing.Size(150, 27)
 $invertCheck.Checked = [bool]$settings.invertMouseY
 $invertCheck.Font = New-Font -Size 9.5
-$main.Controls.Add($invertCheck)
+$controlsTab.Controls.Add($invertCheck)
 
 $accelerationCheck = New-Object System.Windows.Forms.CheckBox
 $accelerationCheck.Text = 'Mouse acceleration'
-$accelerationCheck.Location = New-Object System.Drawing.Point(204, 518)
+$accelerationCheck.Location = New-Object System.Drawing.Point(185, 180)
 $accelerationCheck.Size = New-Object System.Drawing.Size(175, 27)
 $accelerationCheck.Checked = [bool]$settings.mouseAcceleration
 $accelerationCheck.Font = New-Font -Size 9.5
-$main.Controls.Add($accelerationCheck)
+$controlsTab.Controls.Add($accelerationCheck)
 
-$main.Controls.Add((New-TextLabel -Text 'Vertical FOV' -X 403 -Y 520 -Width 100 -Height 20 -Size 9 -Color $inkSoft))
-$fovValue = New-TextLabel -Text "$($settings.fieldOfView) deg" -X 582 -Y 520 -Width 65 -Height 20 -Size 9 -Color $red -Style Bold
+$headRollCheck = New-Object System.Windows.Forms.CheckBox
+$headRollCheck.Text = 'Reduce camera head roll'
+$headRollCheck.Location = New-Object System.Drawing.Point(375, 180)
+$headRollCheck.Size = New-Object System.Drawing.Size(215, 27)
+$headRollCheck.Checked = [bool]$settings.disableHeadRoll
+$headRollCheck.Font = New-Font -Size 9.5
+$controlsTab.Controls.Add($headRollCheck)
+
+$controlsTab.Controls.Add((New-TextLabel -Text 'Vertical field of view' -X 22 -Y 245 -Width 180 -Height 20 -Size 9 -Color $inkSoft))
+$fovValue = New-TextLabel -Text "$($settings.fieldOfView) deg" -X 555 -Y 245 -Width 75 -Height 20 -Size 9 -Color $red -Style Bold
 $fovValue.TextAlign = [System.Drawing.ContentAlignment]::TopRight
-$main.Controls.Add($fovValue)
+$controlsTab.Controls.Add($fovValue)
 $fov = New-Object System.Windows.Forms.TrackBar
-$fov.Location = New-Object System.Drawing.Point(494, 512)
-$fov.Size = New-Object System.Drawing.Size(103, 38)
+$fov.Location = New-Object System.Drawing.Point(15, 269)
+$fov.Size = New-Object System.Drawing.Size(620, 45)
 $fov.Minimum = 45
 $fov.Maximum = 100
 $fov.TickFrequency = 15
 $fov.Value = [math]::Max(45, [math]::Min(100, [int]$settings.fieldOfView))
-$main.Controls.Add($fov)
+$controlsTab.Controls.Add($fov)
+$controlsTab.Controls.Add((New-TextLabel -Text '60 degrees vertical is about 91 degrees horizontal at 16:9. Wider values reveal more of the scene.' -X 22 -Y 321 -Width 610 -Height 35 -Size 8.5 -Color $inkSoft))
 
-$main.Controls.Add((New-SectionRule -Y 562))
+$systemTab.Controls.Add((New-TextLabel -Text 'SAVE SAFETY' -X 22 -Y 22 -Width 150 -Height 20 -Size 9 -Color $olive -Style Bold))
+$backupCheck = New-Object System.Windows.Forms.CheckBox
+$backupCheck.Text = 'Create a backup when saves change'
+$backupCheck.Location = New-Object System.Drawing.Point(22, 55)
+$backupCheck.Size = New-Object System.Drawing.Size(280, 28)
+$backupCheck.Checked = [bool]$settings.backupSaves
+$backupCheck.Font = New-Font -Size 9.5
+$systemTab.Controls.Add($backupCheck)
 
-$launchStatus = New-TextLabel -Text 'Ready to configure.' -X 40 -Y 591 -Width 395 -Height 42 -Size 9 -Color $inkSoft
+$systemTab.Controls.Add((New-TextLabel -Text 'Keep' -X 325 -Y 59 -Width 45 -Height 20 -Size 9 -Color $inkSoft))
+$retention = New-Object System.Windows.Forms.NumericUpDown
+$retention.Location = New-Object System.Drawing.Point(370, 55)
+$retention.Size = New-Object System.Drawing.Size(65, 28)
+$retention.Minimum = 1
+$retention.Maximum = 50
+$retention.Value = [math]::Max(1, [math]::Min(50, [int]$settings.backupRetention))
+Style-Field $retention
+$systemTab.Controls.Add($retention)
+$systemTab.Controls.Add((New-TextLabel -Text 'snapshots' -X 445 -Y 59 -Width 90 -Height 20 -Size 9 -Color $inkSoft))
+
+$pauseCheck = New-Object System.Windows.Forms.CheckBox
+$pauseCheck.Text = 'Pause emulation when the game loses focus'
+$pauseCheck.Location = New-Object System.Drawing.Point(22, 101)
+$pauseCheck.Size = New-Object System.Drawing.Size(340, 28)
+$pauseCheck.Checked = [bool]$settings.pauseWhenInactive
+$pauseCheck.Font = New-Font -Size 9.5
+$systemTab.Controls.Add($pauseCheck)
+$systemTab.Controls.Add((New-TextLabel -Text 'Backups are content-aware: launching twice without a save change does not create duplicates.' -X 22 -Y 145 -Width 610 -Height 38 -Size 8.5 -Color $inkSoft))
+
+$systemTab.Controls.Add((New-TextLabel -Text 'TOOLS' -X 22 -Y 205 -Width 130 -Height 20 -Size 9 -Color $olive -Style Bold))
+$openSavesButton = New-UtilityButton -Text 'OPEN SAVES' -X 22 -Y 238 -Width 140
+$systemTab.Controls.Add($openSavesButton)
+$openRuntimeButton = New-UtilityButton -Text 'OPEN RUNTIME' -X 174 -Y 238 -Width 140
+$systemTab.Controls.Add($openRuntimeButton)
+$diagnosticsButton = New-UtilityButton -Text 'COPY DIAGNOSTICS' -X 326 -Y 238 -Width 155
+$systemTab.Controls.Add($diagnosticsButton)
+$resetButton = New-UtilityButton -Text 'RESET QUALITY' -X 493 -Y 238 -Width 140
+$systemTab.Controls.Add($resetButton)
+$systemTab.Controls.Add((New-TextLabel -Text 'Diagnostics copy version and file hashes without including ROM data.' -X 22 -Y 294 -Width 610 -Height 30 -Size 8.5 -Color $inkSoft))
+
+$launchStatus = New-TextLabel -Text 'Ready to configure.' -X 40 -Y 655 -Width 430 -Height 42 -Size 9 -Color $inkSoft
 $main.Controls.Add($launchStatus)
 
 $launchButton = New-Object System.Windows.Forms.Button
 $launchButton.Text = 'LAUNCH GOLDENEYE  >'
-$launchButton.Location = New-Object System.Drawing.Point(445, 584)
-$launchButton.Size = New-Object System.Drawing.Size(203, 50)
+$launchButton.Location = New-Object System.Drawing.Point(493, 648)
+$launchButton.Size = New-Object System.Drawing.Size(215, 50)
 $launchButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $launchButton.FlatAppearance.BorderSize = 0
 $launchButton.BackColor = $red
@@ -282,13 +414,18 @@ $launchButton.Cursor = [System.Windows.Forms.Cursors]::Hand
 $main.Controls.Add($launchButton)
 $form.AcceptButton = $launchButton
 
-$footer = New-TextLabel -Text 'QUALITY ADAPTER  1964GEPD  /  MOUSE INJECTOR 2.3  /  GLIDEN64' -X 40 -Y 660 -Width 610 -Height 20 -Size 7.5 -Color ([System.Drawing.Color]::FromArgb(126, 128, 118)) -Style Bold
+$footer = New-TextLabel -Text 'Q BRANCH  /  1964GEPD  /  MOUSE INJECTOR 2.3  /  GLIDEN64' -X 40 -Y 726 -Width 670 -Height 20 -Size 7.5 -Color ([System.Drawing.Color]::FromArgb(126, 128, 118)) -Style Bold
 $main.Controls.Add($footer)
 
 $toolTip = New-Object System.Windows.Forms.ToolTip
 $toolTip.SetToolTip($vsyncCheck, 'Can reduce tearing, but may add input latency.')
+$toolTip.SetToolTip($aaCombo, 'MSAA improves polygon edges without the blur introduced by FXAA.')
+$toolTip.SetToolTip($anisotropyCombo, 'Improves textures viewed at an angle with little cost on modern GPUs.')
+$toolTip.SetToolTip($texturePackCheck, 'Uses the bundled enhanced GoldenEye HUD texture cache.')
 $toolTip.SetToolTip($accelerationCheck, 'Off is recommended for consistent muscle memory.')
+$toolTip.SetToolTip($headRollCheck, 'Reduces GoldenEye camera roll for a steadier modern-FPS feel.')
 $toolTip.SetToolTip($fov, '60 degrees vertical is approximately 91 degrees horizontal at 16:9.')
+$toolTip.SetToolTip($backupCheck, 'Creates a new snapshot only when a save file has changed.')
 
 $setResolutionSelection = {
     $width = if ($displayCombo.SelectedItem -eq 'Windowed') { [int]$settings.windowedWidth } else { [int]$settings.fullscreenWidth }
@@ -365,6 +502,60 @@ $fov.Add_ValueChanged({ $fovValue.Text = "$($fov.Value) deg" })
 $launchButton.Add_MouseEnter({ $launchButton.BackColor = $redHover })
 $launchButton.Add_MouseLeave({ $launchButton.BackColor = $red })
 
+$openSavesButton.Add_Click({
+    $path = Join-Path $InstallRoot '1964\save'
+    New-Item -ItemType Directory -Path $path -Force | Out-Null
+    Start-Process -FilePath $path
+})
+
+$openRuntimeButton.Add_Click({
+    $path = Join-Path $InstallRoot '1964'
+    if (-not (Test-Path -LiteralPath $path -PathType Container)) {
+        [System.Windows.Forms.MessageBox]::Show($form, 'The quality runtime is not installed yet.', 'Runtime not found') | Out-Null
+        return
+    }
+    Start-Process -FilePath $path
+})
+
+$diagnosticsButton.Add_Click({
+    try {
+        $diagnostics = Get-GoldenEyeDiagnostics -InstallRoot $InstallRoot
+        [System.Windows.Forms.Clipboard]::SetText($diagnostics)
+        $launchStatus.Text = 'Diagnostics copied to the clipboard.'
+        $launchStatus.ForeColor = $success
+    }
+    catch {
+        [System.Windows.Forms.MessageBox]::Show($form, $_.Exception.Message, 'Diagnostics failed') | Out-Null
+    }
+})
+
+$resetButton.Add_Click({
+    $settings.displayMode = 'Fullscreen'
+    $settings.fullscreenWidth = $screen.Width
+    $settings.fullscreenHeight = $screen.Height
+    $settings.windowedWidth = 1280
+    $settings.windowedHeight = 720
+    $displayCombo.SelectedItem = 'Fullscreen'
+    & $setResolutionSelection
+    $vsyncCheck.Checked = $false
+    $aaCombo.SelectedIndex = 3
+    $anisotropyCombo.SelectedIndex = 4
+    $aspectCombo.SelectedIndex = 0
+    $texturePackCheck.Checked = $true
+    $fpsCheck.Checked = $false
+    $controlsCombo.SelectedIndex = 0
+    $sensitivity.Value = 20
+    $invertCheck.Checked = $false
+    $accelerationCheck.Checked = $false
+    $headRollCheck.Checked = $true
+    $fov.Value = 60
+    $backupCheck.Checked = $true
+    $retention.Value = 10
+    $pauseCheck.Checked = $true
+    $launchStatus.Text = 'Quality defaults restored. Launch to save and apply them.'
+    $launchStatus.ForeColor = $success
+})
+
 $launchButton.Add_Click({
     if (-not (& $verifyRom)) { return }
     try {
@@ -386,11 +577,20 @@ $launchButton.Add_Click({
             $next.fullscreenHeight = $resolution.Height
         }
         $next.verticalSync = $vsyncCheck.Checked
+        $next.antiAliasing = @('Off', 'FXAA', 'MSAA2', 'MSAA4', 'MSAA8')[$aaCombo.SelectedIndex]
+        $next.anisotropy = @(0, 2, 4, 8, 16)[$anisotropyCombo.SelectedIndex]
+        $next.aspectRatio = @('Widescreen', 'Original4x3', 'Stretch', 'Adjust')[$aspectCombo.SelectedIndex]
+        $next.texturePack = $texturePackCheck.Checked
+        $next.showFps = $fpsCheck.Checked
         $next.controlPreset = @('ModernFPS', 'Hybrid', 'ClassicInjector')[$controlsCombo.SelectedIndex]
         $next.mouseSensitivityPercent = $sensitivity.Value * 5
         $next.mouseAcceleration = $accelerationCheck.Checked
         $next.invertMouseY = $invertCheck.Checked
         $next.fieldOfView = $fov.Value
+        $next.disableHeadRoll = $headRollCheck.Checked
+        $next.pauseWhenInactive = $pauseCheck.Checked
+        $next.backupSaves = $backupCheck.Checked
+        $next.backupRetention = [int]$retention.Value
 
         $next = Save-GoldenEyeLauncherSettings -InstallRoot $InstallRoot -Settings $next
         Set-GoldenEyeRuntimeSettings -InstallRoot $InstallRoot -Settings $next

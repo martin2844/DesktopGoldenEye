@@ -4,7 +4,7 @@ Every milestone has an exit gate. A milestone is not complete because code exist
 
 ## M0 — Feasibility, provenance, and upstream freeze
 
-**Status:** technically complete for local development; public redistribution provenance remains open.
+**Status:** technically complete for local development. The 1964GEPD fork and GPL core build are reproducible; public redistribution of the aggregate plugin/asset bundle remains open.
 
 **Purpose:** establish whether the desired public project is technically and legally plausible.
 
@@ -31,7 +31,7 @@ Every milestone has an exit gate. A milestone is not complete because code exist
 
 ## M1 — Reproducible desktop vanilla baseline
 
-**Status:** two Windows proofs exist: the editable MGB64 build and the checksum-pinned 1964GEPD Quality Adapter. The exact ROM boots through both. A human Dam completion, later missions, and second-machine quality setup remain before the full gate is closed.
+**Status:** two Windows proofs exist: the editable MGB64 build and the source-built 1964GEPD Q Branch Quality Adapter. The exact ROM boots through both. The Q Branch core builds with VS2022 and launches through the real launcher; a human Dam completion, later missions, and second-machine quality setup remain before the full gate is closed.
 
 **Purpose:** prove there is a game worth wrapping.
 
@@ -54,7 +54,7 @@ Every milestone has an exit gate. A milestone is not complete because code exist
 
 ## M2 — Asset-free launcher and direct ROM import
 
-**Status:** implemented for the first supported US ROM in both active Adapters. 1964GEPD uses a verified path plus no-space hard-link only when required; MGB64 consumes the selected ROM directly. Neither copies ROM data into Git or a release.
+**Status:** implemented for the first supported US ROM in both active Adapters. Q Branch accepts quoted paths and uses a verified byte-order-correct hard-link only when the filename extension is misleading; MGB64 consumes the selected ROM directly. Neither copies ROM data into Git or a release.
 
 **Purpose:** achieve the Gen1Recomp first-run model.
 
