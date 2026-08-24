@@ -1,8 +1,10 @@
-# GoldenEye Mod Platform
+# 1964 GEPD — Q Branch
 
-An unofficial pet-project plan for a native GoldenEye 007 PC runtime with a Gen1Recomp-style modding experience. Android is a later nice-to-have.
+An unofficial, quality-of-life-focused fork of [Graslu's 1964 GEPD Edition](https://github.com/Graslu/1964GEPD), paired with a friendly GoldenEye 007 launcher and a path toward Gen1Recomp-style modding. Windows is the first supported platform; Android is a later nice-to-have.
 
-> Status: the quality-first Windows launcher now boots the user's ordinary US ROM through verified 1964GEPD + GLideN64, while the existing MGB64 build remains an experimental Lua-modding runtime. No ROM data or third-party emulator binaries are committed.
+> Status: the Windows launcher boots a user-supplied US ROM through 1964GEPD + GLideN64 with Modern FPS controls, configurable display settings, and verified runtime files. The original 1964GEPD source is now part of this repository's Git ancestry. No ROM data is included.
+
+1964 0.8.5 is Copyright (c) 1999–2002 Joel Middendorf. This fork retains the upstream GPL-2.0 license and notices. The unmodified 1964 0.8.5 source is available from [SourceForge](https://sourceforge.net/projects/schibo/files/1964%200.8.5/1964-2002-0922.zip/1964-2002-0922.zip).
 
 ## Product promise
 
@@ -15,7 +17,7 @@ The project deliberately separates two lanes:
 
 ## Recommended technical direction
 
-- 1964GEPD + GLideN64 as the immediate Windows quality Adapter, downloaded from its official release and checksum-verified.
+- This source fork of 1964GEPD + GLideN64 as the immediate Windows quality Adapter. Until reproducible modern builds are complete, Setup downloads the official release and verifies both SHA-1 and SHA-256 before applying this fork's configuration and launcher.
 - MGB64's portable C engine and C++17 Dear ImGui shell, pinned in `runtime/mgb64`, as the experimental Lua/mod Adapter.
 - GoldenRecomp and N64Recomp remain research inputs, not the reproducible product baseline.
 - A Lua 5.4-compatible author Interface (currently hosted by Lua 5.5.1) as the friendly mod language.
@@ -55,7 +57,7 @@ The Runtime Interface is the stable Seam. Emulator acquisition/configuration, RO
 ## Non-goals
 
 - Shipping a ROM, extracted assets, proprietary SDK code, or copyrighted game data.
-- Treating an emulator configuration as the final product.
+- Pretending the launcher alone is the final product; emulator, input-plugin, packaging, and modding improvements all belong in this fork.
 - Making Android support a blocker for the PC alpha.
 - Exposing raw RDRAM offsets as the primary public mod interface.
 - Promising online multiplayer in the initial release.
@@ -63,4 +65,4 @@ The Runtime Interface is the stable Seam. Emulator acquisition/configuration, RO
 
 ## Legal and project identity
 
-This project is unofficial and is not affiliated with Nintendo, Rare, Microsoft, MGM, EON Productions, or the upstream projects named here. GoldenEye 007 and related names and assets belong to their respective owners. See [NOTICE.md](NOTICE.md). A project-code license will be chosen only after the Phase 0 provenance audit establishes what may be distributed.
+This project is unofficial and is not affiliated with Nintendo, Rare, Microsoft, MGM, EON Productions, or the upstream projects named here. GoldenEye 007 and related names and assets belong to their respective owners. See [NOTICE.md](NOTICE.md) and [LICENSE](LICENSE).
