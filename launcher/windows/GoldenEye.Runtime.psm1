@@ -678,7 +678,7 @@ function Start-QualityRuntime {
     }
     if ($Windowed) { $Settings.displayMode = 'Windowed' }
     Set-GoldenEyeRuntimeSettings -InstallRoot $InstallRoot -Settings $Settings
-    $runtimeExecutable = Get-QualityRuntimeExecutable -InstallRoot $InstallRoot
+    $runtimeExecutable = (Resolve-Path -LiteralPath (Get-QualityRuntimeExecutable -InstallRoot $InstallRoot)).Path
     $usingForkedCore = (Split-Path -Leaf $runtimeExecutable) -in @('DesktopGoldenEye.exe', '1964-qbranch.exe')
 
     $runtime = Join-Path $InstallRoot '1964'
