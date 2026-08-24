@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/martin2844/DesktopGoldenEye/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/martin2844/DesktopGoldenEye?include_prereleases&color=c9a227"></a>
+  <a href="https://github.com/martin2844/DesktopGoldenEye/releases"><img alt="Latest release" src="https://img.shields.io/github/v/release/martin2844/DesktopGoldenEye?include_prereleases&color=c9a227"></a>
   <img alt="Platform: Windows 10 and 11" src="https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-1f6feb">
   <img alt="ROM not included" src="https://img.shields.io/badge/ROM-not%20included-8b1e1e">
   <a href="LICENSE"><img alt="License: GPL-2.0" src="https://img.shields.io/badge/license-GPL--2.0-2f7d32"></a>
@@ -29,7 +29,7 @@ contains or downloads GoldenEye 007.
 ## Download and play
 
 1. Download `DesktopGoldenEye-Windows-x86-0.1.0.0-Portable.exe` from the
-   [latest release](https://github.com/martin2844/DesktopGoldenEye/releases/latest).
+   [releases page](https://github.com/martin2844/DesktopGoldenEye/releases).
 2. Open it. The portable package expands into
    `%LOCALAPPDATA%\DesktopGoldenEye\Portable` and keeps saves/settings there.
 3. Select your legally obtained US GoldenEye 007 ROM.
