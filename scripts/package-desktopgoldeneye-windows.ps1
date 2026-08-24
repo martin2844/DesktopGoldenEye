@@ -99,10 +99,10 @@ foreach ($file in @('LICENSE', 'NOTICE.md', 'THIRD_PARTY_NOTICES.md')) {
     Copy-Item -LiteralPath (Join-Path $repositoryRoot $file) -Destination $packageRoot
 }
 
-$revisionOutput = & git -c 'safe.directory=*' -c 'core.autocrlf=false' -c 'core.filemode=false' -C $repositoryRoot rev-parse HEAD
+$revisionOutput = & git -c 'safe.directory=*' -c 'core.filemode=false' -C $repositoryRoot rev-parse HEAD
 if ($LASTEXITCODE -ne 0 -or -not $revisionOutput) { throw 'Could not determine the DesktopGoldenEye source revision.' }
 $revision = $revisionOutput.Trim()
-$workingTreeStatus = @(& git -c 'safe.directory=*' -c 'core.autocrlf=false' -c 'core.filemode=false' -C $repositoryRoot status --porcelain)
+$workingTreeStatus = @(& git -c 'safe.directory=*' -c 'core.filemode=false' -C $repositoryRoot status --porcelain)
 if ($LASTEXITCODE -ne 0) { throw 'Could not determine whether the DesktopGoldenEye source tree is clean.' }
 $sourceDirty = $workingTreeStatus.Count -ne 0
 if ($sourceDirty -and $Version -notmatch '(?i)(dev|alpha|local)') {
