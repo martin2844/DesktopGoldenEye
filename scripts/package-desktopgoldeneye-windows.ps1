@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [string]$Version = '0.1.0-dev',
+    [string]$Version = '0.1.0.0-dev',
     [string]$BundlePath,
     [string]$OutputDirectory
 )
