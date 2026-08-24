@@ -34,6 +34,11 @@ jobs:
         shell: pwsh
         run: |
           .\scripts\package-desktopgoldeneye-windows.ps1 -Version $env:DG_VERSION
+          .\scripts\test-desktopgoldeneye-package-failures.ps1 `
+            -PackageRoot ".\.work\package-windows\DesktopGoldenEye-Windows-x86-$env:DG_VERSION" `
+            -BundlePath ".\.work\downloads\1964_GEPD_Edition_No_DRP.zip"
+          .\scripts\test-desktopgoldeneye-portable-bootstrap.ps1 `
+            -PackageArchive ".\dist\DesktopGoldenEye-Windows-x86-$env:DG_VERSION.zip"
           .\scripts\package-desktopgoldeneye-portable-exe.ps1 `
             -PackageArchive ".\dist\DesktopGoldenEye-Windows-x86-$env:DG_VERSION.zip"
 

@@ -23,7 +23,11 @@ if ($manifest.product -ne 'DesktopGoldenEye' -or $manifest.romIncluded -ne $fals
 }
 $payloadId = "$($manifest.version)|$($manifest.sourceRevision)"
 
-$cacheParent = Join-Path $env:LOCALAPPDATA 'DesktopGoldenEye'
+$cacheParent = if ($env:DESKTOPGOLDENEYE_PORTABLE_CACHE_PARENT) {
+    [System.IO.Path]::GetFullPath($env:DESKTOPGOLDENEYE_PORTABLE_CACHE_PARENT)
+} else {
+    Join-Path $env:LOCALAPPDATA 'DesktopGoldenEye'
+}
 $installRoot = Join-Path $cacheParent 'Portable'
 $marker = Join-Path $installRoot '.payload-id'
 $mutex = New-Object System.Threading.Mutex($false, 'Local\DesktopGoldenEyePortableBootstrap')
@@ -94,4 +98,6 @@ finally {
 }
 
 $launcher = Join-Path $installRoot 'DesktopGoldenEye.cmd'
-Start-Process -FilePath $launcher -WorkingDirectory $installRoot
+if ($env:DESKTOPGOLDENEYE_PORTABLE_NO_LAUNCH -ne '1') {
+    Start-Process -FilePath $launcher -WorkingDirectory $installRoot
+}

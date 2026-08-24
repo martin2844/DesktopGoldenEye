@@ -69,6 +69,11 @@ Package integrity (ROM-free):
 ```powershell
 .\scripts\test-desktopgoldeneye-package.ps1 `
   -PackageRoot .\.work\package-windows\DesktopGoldenEye-Windows-x86-0.1.0.0
+.\scripts\test-desktopgoldeneye-package-failures.ps1 `
+  -PackageRoot .\.work\package-windows\DesktopGoldenEye-Windows-x86-0.1.0.0 `
+  -BundlePath .\.work\downloads\1964_GEPD_Edition_No_DRP.zip
+.\scripts\test-desktopgoldeneye-portable-bootstrap.ps1 `
+  -PackageArchive .\dist\DesktopGoldenEye-Windows-x86-0.1.0.0.zip
 ```
 
 Installed runtime and private ROM smoke:
@@ -79,10 +84,11 @@ Installed runtime and private ROM smoke:
   -InstallRoot "$env:LOCALAPPDATA\DesktopGoldenEye\Portable"
 ```
 
-The private test verifies ROM identity, generated graphics/input settings,
-save-backup deduplication, diagnostics, core selection, and the windowed cursor
-capture regression. Do not commit the ROM, screenshots containing game assets,
-launcher state, or saves.
+The private test verifies all three byte orders from temporary derived fixtures,
+unsupported-image rejection, generated graphics/input settings, changed-save
+snapshots and retention, diagnostics, core selection, and the windowed cursor
+capture regression. Do not commit the ROM, temporary fixtures, screenshots
+containing game assets, launcher state, or saves. See [Testing](../TESTING.md).
 
 ## Release automation
 

@@ -13,6 +13,76 @@ if ($rom.CanonicalSha1 -ne 'ABE01E4AEB033B6C0836819F549C791B26CFDE83') {
     throw 'ROM verification did not return the canonical GoldenEye US hash.'
 }
 
+if (-not ('GoldenEyeRomOrderTest' -as [type])) {
+    Add-Type @'
+using System;
+using System.IO;
+
+public static class GoldenEyeRomOrderTest
+{
+    public static byte[] ToZ64(string path, string format)
+    {
+        byte[] data = File.ReadAllBytes(path);
+        if (format == "v64") {
+            for (int i = 0; i < data.Length; i += 2) {
+                byte value = data[i]; data[i] = data[i + 1]; data[i + 1] = value;
+            }
+        } else if (format == "n64") {
+            for (int i = 0; i < data.Length; i += 4) {
+                byte a = data[i]; byte b = data[i + 1];
+                data[i] = data[i + 3]; data[i + 1] = data[i + 2];
+                data[i + 2] = b; data[i + 3] = a;
+            }
+        }
+        return data;
+    }
+
+    public static void WriteOrder(byte[] z64, string format, string path)
+    {
+        byte[] data = (byte[])z64.Clone();
+        if (format == "v64") {
+            for (int i = 0; i < data.Length; i += 2) {
+                byte value = data[i]; data[i] = data[i + 1]; data[i + 1] = value;
+            }
+        } else if (format == "n64") {
+            for (int i = 0; i < data.Length; i += 4) {
+                byte a = data[i]; byte b = data[i + 1];
+                data[i] = data[i + 3]; data[i + 1] = data[i + 2];
+                data[i + 2] = b; data[i + 3] = a;
+            }
+        }
+        File.WriteAllBytes(path, data);
+    }
+}
+'@
+}
+
+$romOrderTestRoot = Join-Path $env:TEMP ("DesktopGoldenEye-rom-order-test-" + [guid]::NewGuid().ToString('N'))
+try {
+    New-Item -ItemType Directory -Path $romOrderTestRoot | Out-Null
+    $z64Bytes = [GoldenEyeRomOrderTest]::ToZ64($rom.Path, $rom.Format)
+    foreach ($format in @('z64', 'v64', 'n64')) {
+        $testRomPath = Join-Path $romOrderTestRoot "GoldenEye007USA.$format"
+        [GoldenEyeRomOrderTest]::WriteOrder($z64Bytes, $format, $testRomPath)
+        $testRom = Get-GoldenEyeRomInfo -RomPath $testRomPath
+        if ($testRom.Format -ne $format -or $testRom.CanonicalSha1 -ne $rom.CanonicalSha1) {
+            throw "ROM byte-order validation failed for $format."
+        }
+    }
+
+    $invalidRomPath = Join-Path $romOrderTestRoot 'invalid.z64'
+    [System.IO.File]::WriteAllBytes($invalidRomPath, (New-Object byte[] 12582912))
+    $invalidRejected = $false
+    try { [void](Get-GoldenEyeRomInfo -RomPath $invalidRomPath) }
+    catch { $invalidRejected = $_.Exception.Message -match 'Unsupported GoldenEye ROM' }
+    if (-not $invalidRejected) { throw 'A same-size ROM with an unsupported hash was not rejected.' }
+}
+finally {
+    if (Test-Path -LiteralPath $romOrderTestRoot -PathType Container) {
+        Remove-Item -LiteralPath $romOrderTestRoot -Recurse -Force
+    }
+}
+
 $required = @(
     '1964\1964.exe',
     '1964\zlib.dll',
@@ -51,10 +121,38 @@ if ($settings.schemaVersion -ne 3 -or $settings.controlPreset -ne 'ModernFPS' -o
     throw 'Launcher state did not migrate to the Modern FPS schema.'
 }
 
-$firstBackup = Backup-GoldenEyeSaves -InstallRoot $InstallRoot -Retention 2
-$secondBackup = Backup-GoldenEyeSaves -InstallRoot $InstallRoot -Retention 2
-if ($firstBackup -ne $secondBackup) {
-    throw 'Content-aware save backup created a duplicate snapshot without save changes.'
+$backupTestRoot = Join-Path $env:TEMP ("DesktopGoldenEye-save-test-" + [guid]::NewGuid().ToString('N'))
+try {
+    $backupTestSave = Join-Path $backupTestRoot '1964\save\goldeneye.sra'
+    New-Item -ItemType Directory -Path (Split-Path -Parent $backupTestSave) -Force | Out-Null
+    Set-Content -LiteralPath $backupTestSave -Value 'save-version-1' -Encoding ASCII
+
+    $firstBackup = Backup-GoldenEyeSaves -InstallRoot $backupTestRoot -Retention 2
+    if (-not $firstBackup -or -not (Test-Path -LiteralPath (Join-Path $firstBackup 'manifest.json') -PathType Leaf)) {
+        throw 'Save backup did not create a snapshot and manifest.'
+    }
+    $secondBackup = Backup-GoldenEyeSaves -InstallRoot $backupTestRoot -Retention 2
+    if ($firstBackup -ne $secondBackup) {
+        throw 'Content-aware save backup created a duplicate snapshot without save changes.'
+    }
+
+    Set-Content -LiteralPath $backupTestSave -Value 'save-version-2' -Encoding ASCII
+    $thirdBackup = Backup-GoldenEyeSaves -InstallRoot $backupTestRoot -Retention 2
+    if (-not $thirdBackup -or $thirdBackup -eq $firstBackup) {
+        throw 'Changed save content did not create a new snapshot.'
+    }
+    Start-Sleep -Milliseconds 5
+    Set-Content -LiteralPath $backupTestSave -Value 'save-version-3' -Encoding ASCII
+    [void](Backup-GoldenEyeSaves -InstallRoot $backupTestRoot -Retention 2)
+    $retainedBackups = @(Get-ChildItem -LiteralPath (Join-Path $backupTestRoot 'save-backups') -Directory)
+    if ($retainedBackups.Count -ne 2) {
+        throw "Save-backup retention expected 2 snapshots and found $($retainedBackups.Count)."
+    }
+}
+finally {
+    if (Test-Path -LiteralPath $backupTestRoot -PathType Container) {
+        Remove-Item -LiteralPath $backupTestRoot -Recurse -Force
+    }
 }
 
 $diagnostics = Get-GoldenEyeDiagnostics -InstallRoot $InstallRoot
