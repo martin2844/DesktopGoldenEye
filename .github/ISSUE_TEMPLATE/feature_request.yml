@@ -1,0 +1,30 @@
+name: Feature request
+description: Suggest a focused player, packaging, platform, or modding improvement
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Player problem
+      description: What is difficult or impossible today?
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: Describe the experience, not only a specific implementation.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: [Launcher, Controls, Graphics, Audio, Saves, Packaging, Mods, Linux/macOS, Documentation]
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context

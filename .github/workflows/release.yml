@@ -1,0 +1,110 @@
+name: Windows build and release
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktopgoldeneye-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  windows:
+    runs-on: windows-2022
+    outputs:
+      package-version: ${{ steps.version.outputs.value }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Select package version
+        id: version
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REF -like 'refs/tags/v*') {
+            if ($env:GITHUB_REF_NAME -notmatch '^v\d+\.\d+\.\d+\.\d+$') {
+              throw "Release tags must use vMAJOR.MINOR.PATCH.MICRO format. Got: $env:GITHUB_REF_NAME"
+            }
+            $version = $env:GITHUB_REF_NAME.TrimStart('v')
+            $committedVersion = (Get-Content .\VERSION -Raw).Trim()
+            if ($version -ne $committedVersion) {
+              throw "Release tag version $version does not match committed VERSION $committedVersion."
+            }
+            if (-not (Select-String -LiteralPath .\CHANGELOG.md -SimpleMatch "## [$version]" -Quiet)) {
+              throw "CHANGELOG.md has no release section for $version."
+            }
+          } else {
+            $version = "0.0.0.0-ci.$env:GITHUB_RUN_NUMBER"
+          }
+          "DG_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "value=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Package and validate
+        shell: pwsh
+        run: |
+          .\scripts\package-desktopgoldeneye-windows.ps1 -Version $env:DG_VERSION
+          .\scripts\test-desktopgoldeneye-package-failures.ps1 `
+            -PackageRoot ".\.work\package-windows\DesktopGoldenEye-Windows-x86-$env:DG_VERSION" `
+            -BundlePath ".\.work\downloads\1964_GEPD_Edition_No_DRP.zip"
+          .\scripts\test-desktopgoldeneye-portable-bootstrap.ps1 `
+            -PackageArchive ".\dist\DesktopGoldenEye-Windows-x86-$env:DG_VERSION.zip"
+          .\scripts\package-desktopgoldeneye-portable-exe.ps1 `
+            -PackageArchive ".\dist\DesktopGoldenEye-Windows-x86-$env:DG_VERSION.zip"
+
+      - name: Write SHA-256 checksums
+        shell: pwsh
+        run: |
+          Get-FileHash .\dist\*.zip, .\dist\*.exe -Algorithm SHA256 |
+            ForEach-Object { "$($_.Hash.ToLowerInvariant())  $([IO.Path]::GetFileName($_.Path))" } |
+            Set-Content .\dist\SHA256SUMS.txt -Encoding ascii
+          Get-Content .\dist\SHA256SUMS.txt
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: DesktopGoldenEye-Windows-${{ steps.version.outputs.value }}
+          path: |
+            dist/*.zip
+            dist/*.exe
+            dist/SHA256SUMS.txt
+          if-no-files-found: error
+
+  publish:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: windows
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download validated release artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: DesktopGoldenEye-Windows-${{ needs.windows.outputs.package-version }}
+          path: dist
+
+      - name: Publish tagged prerelease
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DG_VERSION: ${{ needs.windows.outputs.package-version }}
+        run: |
+          set -euo pipefail
+          mapfile -t assets < <(find dist -maxdepth 1 -type f \( -name '*.zip' -o -name '*.exe' -o -name 'SHA256SUMS.txt' \) -print | sort)
+          test "${#assets[@]}" -eq 3
+          if gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "${assets[@]}" --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" "${assets[@]}" \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "DesktopGoldenEye $DG_VERSION" \
+              --prerelease \
+              --generate-notes
+          fi

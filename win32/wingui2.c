@@ -1184,22 +1184,13 @@ LRESULT APIENTRY About(HWND hDlg, unsigned message, WORD wParam, LONG lParam)
 }
 
 
-char cmdLineParameterBuf[250] = {0};
+#define CMDLINE_PARAMETER_BUFFER_SIZE 4096
+
+char cmdLineParameterBuf[CMDLINE_PARAMETER_BUFFER_SIZE] = {0};
 void SaveCmdLineParameter(char *cmdline)
 {
-	strcpy(cmdLineParameterBuf, cmdline);
-	if( strlen(cmdLineParameterBuf) > 0 )
-	{
-		int i;
-		int len = strlen(cmdLineParameterBuf);
-		for( i=0; i<len; i++ )
-		{
-			if( isupper(cmdLineParameterBuf[i]) )
-			{
-				cmdLineParameterBuf[i] = tolower(cmdLineParameterBuf[i]);
-			}
-		}
-	}
+	strncpy(cmdLineParameterBuf, cmdline, CMDLINE_PARAMETER_BUFFER_SIZE - 1);
+	cmdLineParameterBuf[CMDLINE_PARAMETER_BUFFER_SIZE - 1] = 0;
 }
 
 //To get a command line parameter if available, please pass a flag
@@ -1222,34 +1213,68 @@ char *CmdLineArgFlags[] =
 	"-o"
 };
 
-void GetCmdLineParameter(CmdLineParameterType arg, char *buf)
+void GetCmdLineParameter(CmdLineParameterType arg, char *buf, int buf_size)
 {
-	char *ptr1;
-	char *ptr2 = buf;
+	char *cursor;
+	const char *flag;
+	int flag_length;
+	int copied;
 
-	if( arg >= CMDLINE_MAX_NUMBER || strstr(cmdLineParameterBuf,CmdLineArgFlags[arg])==NULL )
-	{
-		buf[0] = 0;
+	if(buf == NULL || buf_size <= 0)
 		return;
-	}
-	
-	if( arg == CMDLINE_FULL_SCREEN_FLAG )
-	{
-		strcpy(buf, "1");
+
+	buf[0] = 0;
+	if(arg >= CMDLINE_MAX_NUMBER)
 		return;
-	}
 
-	ptr1 = strstr(cmdLineParameterBuf,CmdLineArgFlags[arg]);
-	
-	ptr1 += 2;	//Skip the flag
-	while( *ptr1 != 0 && isspace(*ptr1) )
+	flag = CmdLineArgFlags[arg];
+	flag_length = strlen(flag);
+	cursor = cmdLineParameterBuf;
+	while(*cursor != 0)
 	{
-		ptr1++;	//skip all spaces
-	}
+		char quote = 0;
 
-	while( !isspace(*ptr1) && *ptr1 != 0)
-	{
-		*ptr2++ = *ptr1++;
-	};
-	*ptr2 = 0;
+		while(*cursor != 0 && isspace((unsigned char)*cursor))
+			cursor++;
+		if(*cursor == 0)
+			break;
+
+		if(_strnicmp(cursor, flag, flag_length) == 0 &&
+			(cursor[flag_length] == 0 || isspace((unsigned char)cursor[flag_length])))
+		{
+			cursor += flag_length;
+			if(arg == CMDLINE_FULL_SCREEN_FLAG)
+			{
+				strncpy(buf, "1", buf_size - 1);
+				buf[buf_size - 1] = 0;
+				return;
+			}
+
+			while(*cursor != 0 && isspace((unsigned char)*cursor))
+				cursor++;
+			if(*cursor == '"' || *cursor == '\'')
+				quote = *cursor++;
+
+			copied = 0;
+			while(*cursor != 0 &&
+				((quote != 0 && *cursor != quote) ||
+				 (quote == 0 && !isspace((unsigned char)*cursor))))
+			{
+				if(copied < buf_size - 1)
+					buf[copied++] = *cursor;
+				cursor++;
+			}
+			buf[copied] = 0;
+			return;
+		}
+
+		if(*cursor == '"' || *cursor == '\'')
+			quote = *cursor++;
+		while(*cursor != 0 &&
+			((quote != 0 && *cursor != quote) ||
+			 (quote == 0 && !isspace((unsigned char)*cursor))))
+			cursor++;
+		if(quote != 0 && *cursor == quote)
+			cursor++;
+	}
 }

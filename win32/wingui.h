@@ -201,6 +201,6 @@ typedef enum {
 	CMDLINE_MAX_NUMBER
 }CmdLineParameterType;
 
-void GetCmdLineParameter(CmdLineParameterType arg, char *buf);
+void GetCmdLineParameter(CmdLineParameterType arg, char *buf, int buf_size);
 
 #endif

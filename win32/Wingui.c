@@ -1860,12 +1860,12 @@ BOOL WinLoadRomStep2(char *szFileName)
 BOOL StartGameByCommandLine()
 {
 	char szFileName[300], temp[300];
-	GetCmdLineParameter(CMDLINE_GAME_FILENAME, szFileName);
+	GetCmdLineParameter(CMDLINE_GAME_FILENAME, szFileName, sizeof(szFileName));
 	if( strlen(szFileName) == 0 )
 	{
 		return FALSE;
 	}
-	strcpy(temp, directories.last_rom_directory);
+	strcpy(temp, directories.rom_directory_to_use);
 	strcat(temp, "\\");
 	strcat(temp, szFileName);
 	strcpy(szFileName, temp);
@@ -1896,7 +1896,7 @@ BOOL StartGameByCommandLine()
 		EnableButton(ID_BUTTON_ROM_PROPERTIES, TRUE);
 		EnableMenuItem(gui.hMenu1964main, ID_FILE_CHEAT, MF_ENABLED);
 		
-		GetCmdLineParameter(CMDLINE_OC_FACTOR, tempstr);
+		GetCmdLineParameter(CMDLINE_OC_FACTOR, tempstr, sizeof(tempstr));
 		if( strlen(tempstr) > 0 )
 		{
 			ocfactor = atoi(tempstr);
@@ -1904,7 +1904,7 @@ BOOL StartGameByCommandLine()
 				SetOverclockFactor(ocfactor);
 		}
 
-		GetCmdLineParameter(CMDLINE_FULL_SCREEN_FLAG, tempstr);
+		GetCmdLineParameter(CMDLINE_FULL_SCREEN_FLAG, tempstr, sizeof(tempstr));
 		if( strlen(tempstr) > 0 )
 		{
 			Play(TRUE);
