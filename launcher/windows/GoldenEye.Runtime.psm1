@@ -538,25 +538,36 @@ function Get-GoldenEyeDiagnostics {
 }
 
 function Get-RomLaunchAlias {
-    param([Parameter(Mandatory)]$RomInfo)
+    param(
+        [Parameter(Mandatory)]$RomInfo,
+        [string]$AliasDirectory
+    )
 
     $source = $RomInfo.Path
     $sourceName = Split-Path -Leaf $source
     $expectedExtension = ".$($RomInfo.Format)"
-    if ($sourceName -notmatch '\s' -and [System.IO.Path]::GetExtension($sourceName) -ieq $expectedExtension) { return $source }
-    $alias = Join-Path (Split-Path -Parent $source) ("GoldenEye007USA.$($RomInfo.Format)")
+    if (-not $AliasDirectory -and $sourceName -notmatch '\s' -and [System.IO.Path]::GetExtension($sourceName) -ieq $expectedExtension) { return $source }
+    $aliasRoot = if ($AliasDirectory) { $AliasDirectory } else { Split-Path -Parent $source }
+    New-Item -ItemType Directory -Path $aliasRoot -Force | Out-Null
+    $alias = Join-Path $aliasRoot ("GoldenEye007USA.$($RomInfo.Format)")
     if (Test-Path -LiteralPath $alias) {
         $aliasHash = (Get-FileHash -LiteralPath $alias -Algorithm SHA1).Hash.ToUpperInvariant()
         if ($aliasHash -ne $RomInfo.Sha1) { throw "ROM launch alias already exists with different content: $alias" }
         return $alias
     }
 
-    Write-Host 'Creating a byte-order-correct ROM hard-link beside the original ROM...'
+    Write-Host 'Preparing a byte-order-correct local ROM launch alias...'
     try {
         New-Item -ItemType HardLink -Path $alias -Target $source | Out-Null
     }
     catch {
-        throw "1964 needs a ROM alias whose extension matches its byte order. Rename the ROM to use $expectedExtension or create '$alias' as a hard link. $($_.Exception.Message)"
+        try {
+            Copy-Item -LiteralPath $source -Destination $alias
+        }
+        catch {
+            if (Test-Path -LiteralPath $alias) { Remove-Item -LiteralPath $alias -Force }
+            throw "Could not prepare the local ROM launch alias '$alias'. $($_.Exception.Message)"
+        }
     }
     return $alias
 }
@@ -667,22 +678,43 @@ function Start-QualityRuntime {
     }
     if ($Windowed) { $Settings.displayMode = 'Windowed' }
     Set-GoldenEyeRuntimeSettings -InstallRoot $InstallRoot -Settings $Settings
-    $romAlias = Get-RomLaunchAlias -RomInfo $RomInfo
-    $romDirectory = Split-Path -Parent $romAlias
     $runtimeExecutable = Get-QualityRuntimeExecutable -InstallRoot $InstallRoot
     $usingForkedCore = (Split-Path -Leaf $runtimeExecutable) -in @('DesktopGoldenEye.exe', '1964-qbranch.exe')
-    if (-not $usingForkedCore -and $romDirectory -match '\s') {
-        throw "1964's command-line parser cannot use a ROM directory containing spaces: '$romDirectory'. Move the ROM to a path such as D:\Roms."
-    }
 
     $runtime = Join-Path $InstallRoot '1964'
-    # The released 1964GEPD parser needs unquoted, space-free values. The path
-    # guard above and Get-RomLaunchAlias enforce that contract.
-    $arguments = Get-QualityRuntimeArguments -RomDirectory $romDirectory -RomName (Split-Path -Leaf $romAlias) -UsingForkedCore $usingForkedCore -Fullscreen:($Settings.displayMode -ne 'Windowed')
-    if ([bool]$Settings.backupSaves) {
-        [void](Backup-GoldenEyeSaves -InstallRoot $InstallRoot -Retention ([int]$Settings.backupRetention))
+    $romAlias = if ($usingForkedCore) {
+        Get-RomLaunchAlias -RomInfo $RomInfo
     }
-    $process = Start-Process -FilePath $runtimeExecutable -WorkingDirectory $runtime -ArgumentList $arguments -PassThru
+    else {
+        Get-RomLaunchAlias -RomInfo $RomInfo -AliasDirectory (Join-Path $runtime 'roms')
+    }
+    $romDirectory = if ($usingForkedCore) { Split-Path -Parent $romAlias } else { 'roms' }
+    # The released 1964GEPD parser needs unquoted, space-free values. Its local
+    # runtime alias and Get-QualityRuntimeArguments enforce that contract.
+    $arguments = Get-QualityRuntimeArguments -RomDirectory $romDirectory -RomName (Split-Path -Leaf $romAlias) -UsingForkedCore $usingForkedCore -Fullscreen:($Settings.displayMode -ne 'Windowed')
+    $runtimeName = [System.IO.Path]::GetFileNameWithoutExtension($runtimeExecutable)
+    $runtimeIdentity = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($runtimeExecutable)).TrimEnd('=').Replace('/', '_').Replace('+', '-')
+    $launchMutex = New-Object System.Threading.Mutex($false, "Local\DesktopGoldenEyeRuntime-$runtimeIdentity")
+    $hasLaunchMutex = $false
+    try {
+        $hasLaunchMutex = $launchMutex.WaitOne(0)
+        if (-not $hasLaunchMutex) { throw 'Another DesktopGoldenEye launcher is starting this runtime. Try again in a moment.' }
+        $alreadyRunning = @(Get-Process -Name $runtimeName -ErrorAction SilentlyContinue | Where-Object {
+            try { $_.Path -and $_.Path.Equals($runtimeExecutable, [System.StringComparison]::OrdinalIgnoreCase) }
+            catch { $false }
+        })
+        if ($alreadyRunning.Count -gt 0) {
+            throw 'GoldenEye is already running from this DesktopGoldenEye installation. Close it before starting another session.'
+        }
+        if ([bool]$Settings.backupSaves) {
+            [void](Backup-GoldenEyeSaves -InstallRoot $InstallRoot -Retention ([int]$Settings.backupRetention))
+        }
+        $process = Start-Process -FilePath $runtimeExecutable -WorkingDirectory $runtime -ArgumentList $arguments -PassThru
+    }
+    finally {
+        if ($hasLaunchMutex) { $launchMutex.ReleaseMutex() }
+        $launchMutex.Dispose()
+    }
     if ($Settings.displayMode -eq 'Windowed') {
         Initialize-QualityWindowInputCapture -Process $process
     }

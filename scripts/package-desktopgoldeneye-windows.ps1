@@ -109,7 +109,15 @@ if ($sourceDirty -and $Version -notmatch '(?i)(dev|alpha|local)') {
     throw 'Refusing to create a non-development release from a dirty source tree.'
 }
 $manifestFiles = [ordered]@{}
-foreach ($relativePath in @('1964\1964.exe', '1964\plugin\GLideN64.dll', '1964\plugin\Mouse_Injector.dll', '1964\plugin\AziAudio.dll')) {
+foreach ($relativePath in @(
+    '1964\1964.exe',
+    '1964\zlib.dll',
+    '1964\msvcr100.dll',
+    '1964\Project64.rdb',
+    '1964\plugin\GLideN64.dll',
+    '1964\plugin\Mouse_Injector.dll',
+    '1964\plugin\AziAudio.dll'
+)) {
     $manifestFiles[$relativePath] = (Get-FileHash -LiteralPath (Join-Path $packageRoot $relativePath) -Algorithm SHA256).Hash.ToUpperInvariant()
 }
 [ordered]@{
@@ -128,6 +136,9 @@ foreach ($relativePath in @('1964\1964.exe', '1964\plugin\GLideN64.dll', '1964\p
         [ordered]@{ name = 'GLideN64'; license = 'GPL-2.0-only'; source = 'https://github.com/gonetz/GLideN64'; bundledSource = '1964\source.tar.xz' },
         [ordered]@{ name = 'Mouse Injector'; license = 'GPL-2.0-only'; source = '1964\source.tar.xz#MouseInjectorPlugin'; bundledSource = '1964\source.tar.xz' },
         [ordered]@{ name = 'AziAudio'; license = 'GPL-2.0-only'; source = 'https://github.com/Azimer/AziAudio'; bundledSource = '1964\source.tar.xz' },
+        [ordered]@{ name = 'zlib'; license = 'Zlib'; source = '1964\source.tar.xz#zlib'; bundledSource = '1964\source.tar.xz' },
+        [ordered]@{ name = 'Microsoft Visual C++ 2010 Runtime'; license = 'Microsoft redistributable runtime terms'; source = 'https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist' },
+        [ordered]@{ name = 'Project64 unofficial RDB v4.23'; license = 'Attribution in file'; source = '1964\Project64.rdb' },
         [ordered]@{ name = 'GoldenEye high-resolution HUD texture cache'; license = 'CC-BY-NC-ND-3.0'; source = '1964\plugin\cache\credits.txt' }
     )
 } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $packageRoot 'release-manifest.json') -Encoding UTF8

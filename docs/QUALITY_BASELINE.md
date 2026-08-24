@@ -55,7 +55,7 @@ the game instead of opening the Windows desktop context menu.
 
 ## Qualification evidence
 
-Automated checks cover ROM fingerprints, quoted paths, generated configuration,
+Automated checks cover ROM fingerprints, space-safe local launch aliases, generated configuration,
 component hashes, save-backup behavior, diagnostics, package allow/deny lists,
 PowerShell parsing, and windowed capture. A private ROM smoke confirms the exact
 package reaches a responsive running game with GLideN64 rendering. Subjective

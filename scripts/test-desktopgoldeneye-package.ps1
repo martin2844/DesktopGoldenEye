@@ -61,7 +61,21 @@ $manifest = Get-Content -LiteralPath (Join-Path $root 'release-manifest.json') -
 if ($manifest.product -ne 'DesktopGoldenEye' -or $manifest.romIncluded -ne $false) {
     throw 'Release manifest product or ROM declaration is invalid.'
 }
-if ($manifest.components.Count -lt 5) { throw 'Release manifest component inventory is incomplete.' }
+if ($manifest.components.Count -lt 9) { throw 'Release manifest component inventory is incomplete.' }
+$expectedActiveFiles = @(
+    '1964\1964.exe',
+    '1964\zlib.dll',
+    '1964\msvcr100.dll',
+    '1964\Project64.rdb',
+    '1964\plugin\GLideN64.dll',
+    '1964\plugin\Mouse_Injector.dll',
+    '1964\plugin\AziAudio.dll'
+)
+foreach ($relativePath in $expectedActiveFiles) {
+    if (-not $manifest.activeFiles.psobject.Properties[$relativePath]) {
+        throw "Release manifest omits active file: $relativePath"
+    }
+}
 foreach ($property in $manifest.activeFiles.psobject.Properties) {
     $path = Join-Path $root $property.Name
     $actual = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToUpperInvariant()

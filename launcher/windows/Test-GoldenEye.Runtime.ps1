@@ -70,12 +70,38 @@ try {
         }
     }
 
+    $spacePathAliasRoot = Join-Path $romOrderTestRoot 'runtime path with spaces\roms'
+    $legacyAlias = & (Get-Module GoldenEye.Runtime) {
+        param($RomInfo, $AliasRoot)
+        Get-RomLaunchAlias -RomInfo $RomInfo -AliasDirectory $AliasRoot
+    } $rom $spacePathAliasRoot
+    if (-not (Test-Path -LiteralPath $legacyAlias -PathType Leaf) -or
+        (Get-FileHash -LiteralPath $legacyAlias -Algorithm SHA1).Hash.ToUpperInvariant() -ne $rom.Sha1) {
+        throw 'The legacy core launch alias did not preserve a ROM selected from a path containing spaces.'
+    }
+    $spaceSafeArguments = Get-QualityRuntimeArguments -RomDirectory 'roms' -RomName (Split-Path -Leaf $legacyAlias) -UsingForkedCore $false
+    if ($spaceSafeArguments -notmatch '^-r roms -g GoldenEye007USA\.(z64|v64|n64) ') {
+        throw 'The legacy core did not receive a relative, space-safe ROM alias.'
+    }
+
     $invalidRomPath = Join-Path $romOrderTestRoot 'invalid.z64'
     [System.IO.File]::WriteAllBytes($invalidRomPath, (New-Object byte[] 12582912))
     $invalidRejected = $false
     try { [void](Get-GoldenEyeRomInfo -RomPath $invalidRomPath) }
     catch { $invalidRejected = $_.Exception.Message -match 'Unsupported GoldenEye ROM' }
     if (-not $invalidRejected) { throw 'A same-size ROM with an unsupported hash was not rejected.' }
+
+    $wrongSizeRomPath = Join-Path $romOrderTestRoot 'wrong-size.z64'
+    [System.IO.File]::WriteAllBytes($wrongSizeRomPath, (New-Object byte[] 4))
+    $wrongSizeRejected = $false
+    try { [void](Get-GoldenEyeRomInfo -RomPath $wrongSizeRomPath) }
+    catch { $wrongSizeRejected = $_.Exception.Message -match 'size' }
+    if (-not $wrongSizeRejected) { throw 'A wrong-size ROM was not rejected.' }
+
+    $missingRejected = $false
+    try { [void](Get-GoldenEyeRomInfo -RomPath (Join-Path $romOrderTestRoot 'missing.z64')) }
+    catch { $missingRejected = $true }
+    if (-not $missingRejected) { throw 'A missing ROM path was not rejected.' }
 }
 finally {
     if (Test-Path -LiteralPath $romOrderTestRoot -PathType Container) {
@@ -125,6 +151,13 @@ $backupTestRoot = Join-Path $env:TEMP ("DesktopGoldenEye-save-test-" + [guid]::N
 try {
     $backupTestSave = Join-Path $backupTestRoot '1964\save\goldeneye.sra'
     New-Item -ItemType Directory -Path (Split-Path -Parent $backupTestSave) -Force | Out-Null
+    if ($null -ne (Backup-GoldenEyeSaves -InstallRoot $backupTestRoot -Retention 2)) {
+        throw 'An empty save directory unexpectedly created a backup.'
+    }
+    Set-Content -LiteralPath (Join-Path (Split-Path -Parent $backupTestSave) 'ignored.txt') -Value 'not an emulator save' -Encoding ASCII
+    if ($null -ne (Backup-GoldenEyeSaves -InstallRoot $backupTestRoot -Retention 2)) {
+        throw 'A non-save file unexpectedly created a backup.'
+    }
     Set-Content -LiteralPath $backupTestSave -Value 'save-version-1' -Encoding ASCII
 
     $firstBackup = Backup-GoldenEyeSaves -InstallRoot $backupTestRoot -Retention 2

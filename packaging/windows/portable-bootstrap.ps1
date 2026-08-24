@@ -1,3 +1,9 @@
+[CmdletBinding()]
+param(
+    [string]$TestCacheParent,
+    [switch]$NoLaunch
+)
+
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -23,10 +29,19 @@ if ($manifest.product -ne 'DesktopGoldenEye' -or $manifest.romIncluded -ne $fals
 }
 $payloadId = "$($manifest.version)|$($manifest.sourceRevision)"
 
-$cacheParent = if ($env:DESKTOPGOLDENEYE_PORTABLE_CACHE_PARENT) {
-    [System.IO.Path]::GetFullPath($env:DESKTOPGOLDENEYE_PORTABLE_CACHE_PARENT)
-} else {
-    Join-Path $env:LOCALAPPDATA 'DesktopGoldenEye'
+$cacheParent = Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::LocalApplicationData)) 'DesktopGoldenEye'
+if ($TestCacheParent) {
+    $candidateCacheParent = [System.IO.Path]::GetFullPath($TestCacheParent)
+    $tempRoot = [System.IO.Path]::GetFullPath($env:TEMP).TrimEnd('\') + '\'
+    if (-not $candidateCacheParent.StartsWith($tempRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw 'The portable test cache must be inside TEMP.'
+    }
+    $relativeTestPath = $candidateCacheParent.Substring($tempRoot.Length)
+    $testRootName = $relativeTestPath.Split('\')[0]
+    if ($testRootName -notlike 'DesktopGoldenEye-bootstrap-test-*') {
+        throw 'The portable test cache must be inside a dedicated DesktopGoldenEye-bootstrap-test-* directory under TEMP.'
+    }
+    $cacheParent = $candidateCacheParent
 }
 $installRoot = Join-Path $cacheParent 'Portable'
 $marker = Join-Path $installRoot '.payload-id'
@@ -56,6 +71,16 @@ try {
             }
 
             if (Test-Path -LiteralPath $installRoot -PathType Container) {
+                $oldManifestPath = Join-Path $installRoot 'release-manifest.json'
+                if (-not (Test-Path -LiteralPath $marker -PathType Leaf) -or
+                    -not (Test-Path -LiteralPath $oldManifestPath -PathType Leaf)) {
+                    throw "Refusing to replace an unrecognized directory at '$installRoot'."
+                }
+                try { $oldManifest = Get-Content -LiteralPath $oldManifestPath -Raw | ConvertFrom-Json }
+                catch { throw "Refusing to replace an installation with an unreadable release manifest at '$installRoot'." }
+                if ($oldManifest.product -ne 'DesktopGoldenEye' -or $oldManifest.romIncluded -ne $false) {
+                    throw "Refusing to replace an installation that is not identified as DesktopGoldenEye at '$installRoot'."
+                }
                 $oldState = Join-Path $installRoot 'launcher-state.json'
                 if (Test-Path -LiteralPath $oldState -PathType Leaf) {
                     Copy-Item -LiteralPath $oldState -Destination $candidateRoot -Force
@@ -98,6 +123,6 @@ finally {
 }
 
 $launcher = Join-Path $installRoot 'DesktopGoldenEye.cmd'
-if ($env:DESKTOPGOLDENEYE_PORTABLE_NO_LAUNCH -ne '1') {
+if (-not $NoLaunch) {
     Start-Process -FilePath $launcher -WorkingDirectory $installRoot
 }

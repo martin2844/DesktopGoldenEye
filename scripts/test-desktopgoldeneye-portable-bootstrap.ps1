@@ -14,31 +14,42 @@ $bootstrap = Join-Path $harness 'portable-bootstrap.ps1'
 $payload = Join-Path $harness 'payload.zip'
 
 function Invoke-Bootstrap {
-    param([switch]$ExpectFailure)
+    param(
+        [switch]$ExpectFailure,
+        [string]$CacheParentOverride = $cacheParent
+    )
 
-    $oldCache = $env:DESKTOPGOLDENEYE_PORTABLE_CACHE_PARENT
-    $oldNoLaunch = $env:DESKTOPGOLDENEYE_PORTABLE_NO_LAUNCH
-    try {
-        $env:DESKTOPGOLDENEYE_PORTABLE_CACHE_PARENT = $cacheParent
-        $env:DESKTOPGOLDENEYE_PORTABLE_NO_LAUNCH = '1'
-        $process = Start-Process -FilePath (Join-Path $PSHOME 'powershell.exe') -ArgumentList @(
-            '-NoProfile',
-            '-ExecutionPolicy', 'Bypass',
-            '-File', ('"{0}"' -f $bootstrap)
-        ) -Wait -PassThru
-        if ($ExpectFailure -and $process.ExitCode -eq 0) { throw 'Broken portable payload unexpectedly installed.' }
-        if (-not $ExpectFailure -and $process.ExitCode -ne 0) { throw "Portable bootstrap failed with exit code $($process.ExitCode)." }
-    }
-    finally {
-        $env:DESKTOPGOLDENEYE_PORTABLE_CACHE_PARENT = $oldCache
-        $env:DESKTOPGOLDENEYE_PORTABLE_NO_LAUNCH = $oldNoLaunch
-    }
+    $process = Start-Process -FilePath (Join-Path $PSHOME 'powershell.exe') -ArgumentList @(
+        '-NoProfile',
+        '-ExecutionPolicy', 'Bypass',
+        '-File', ('"{0}"' -f $bootstrap),
+        '-TestCacheParent', ('"{0}"' -f $CacheParentOverride),
+        '-NoLaunch'
+    ) -Wait -PassThru
+    if ($ExpectFailure -and $process.ExitCode -eq 0) { throw 'Broken portable payload unexpectedly installed.' }
+    if (-not $ExpectFailure -and $process.ExitCode -ne 0) { throw "Portable bootstrap failed with exit code $($process.ExitCode)." }
 }
 
 try {
     New-Item -ItemType Directory -Path $harness -Force | Out-Null
     Copy-Item -LiteralPath (Join-Path $repositoryRoot 'packaging\windows\portable-bootstrap.ps1') -Destination $bootstrap
     Copy-Item -LiteralPath $archive -Destination $payload
+
+    $untrustedCache = Join-Path $env:TEMP ("untrusted-portable-cache-" + [guid]::NewGuid().ToString('N'))
+    Invoke-Bootstrap -ExpectFailure -CacheParentOverride $untrustedCache
+    if (Test-Path -LiteralPath $untrustedCache) {
+        throw 'A rejected portable cache override created or changed its target.'
+    }
+
+    $unownedInstallRoot = Join-Path $cacheParent 'Portable'
+    New-Item -ItemType Directory -Path $unownedInstallRoot -Force | Out-Null
+    $unownedSentinel = Join-Path $unownedInstallRoot 'user-file.txt'
+    Set-Content -LiteralPath $unownedSentinel -Value 'must not be moved or deleted' -Encoding ASCII
+    Invoke-Bootstrap -ExpectFailure
+    if (-not (Test-Path -LiteralPath $unownedSentinel -PathType Leaf)) {
+        throw 'Portable bootstrap changed an unrecognized pre-existing directory.'
+    }
+    Remove-Item -LiteralPath $unownedInstallRoot -Recurse -Force
 
     Invoke-Bootstrap
     $installRoot = Join-Path $cacheParent 'Portable'
@@ -47,6 +58,16 @@ try {
             throw "Portable first install is missing $required"
         }
     }
+
+    $noOpSentinel = Join-Path $installRoot 'no-op-sentinel.txt'
+    $payloadIdBefore = (Get-Content -LiteralPath (Join-Path $installRoot '.payload-id') -Raw).Trim()
+    Set-Content -LiteralPath $noOpSentinel -Value 'must survive an unchanged-payload launch' -Encoding ASCII
+    Invoke-Bootstrap
+    $payloadIdAfter = (Get-Content -LiteralPath (Join-Path $installRoot '.payload-id') -Raw).Trim()
+    if ($payloadIdAfter -ne $payloadIdBefore -or -not (Test-Path -LiteralPath $noOpSentinel -PathType Leaf)) {
+        throw 'An unchanged portable payload was unnecessarily reinstalled.'
+    }
+    Remove-Item -LiteralPath $noOpSentinel -Force
 
     $statePath = Join-Path $installRoot 'launcher-state.json'
     $savePath = Join-Path $installRoot '1964\save\bootstrap-test.sra'

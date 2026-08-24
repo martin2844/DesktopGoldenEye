@@ -46,8 +46,9 @@ folder, and run `DesktopGoldenEye.cmd`.
   resolution, VSync, antialiasing, anisotropic filtering, aspect ratio, and FOV.
 - A high-quality GLideN64 profile, GoldenEye timing fixes, optional unmodified
   enhanced HUD textures, and a stable 60 FPS-oriented baseline.
-- ROM validation performed locally; the ROM is launched from its existing path
-  and is never copied into the package.
+- ROM validation performed locally; the ROM is never copied into a release.
+  At launch, a private hard link—or a local runtime copy when drives differ—is
+  created to accommodate the upstream core's legacy path parser.
 - Automatic save backups, diagnostics, component hashes, source revision, and a
   file-level component inventory.
 - A single self-extracting EXE plus a conventional portable ZIP.
