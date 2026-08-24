@@ -693,7 +693,13 @@ function Start-QualityRuntime {
     # runtime alias and Get-QualityRuntimeArguments enforce that contract.
     $arguments = Get-QualityRuntimeArguments -RomDirectory $romDirectory -RomName (Split-Path -Leaf $romAlias) -UsingForkedCore $usingForkedCore -Fullscreen:($Settings.displayMode -ne 'Windowed')
     $runtimeName = [System.IO.Path]::GetFileNameWithoutExtension($runtimeExecutable)
-    $runtimeIdentity = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($runtimeExecutable)).TrimEnd('=').Replace('/', '_').Replace('+', '-')
+    $identityHasher = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        $runtimeIdentity = -join ($identityHasher.ComputeHash([Text.Encoding]::UTF8.GetBytes($runtimeExecutable)) | ForEach-Object { $_.ToString('x2') })
+    }
+    finally {
+        $identityHasher.Dispose()
+    }
     $launchMutex = New-Object System.Threading.Mutex($false, "Local\DesktopGoldenEyeRuntime-$runtimeIdentity")
     $hasLaunchMutex = $false
     try {
