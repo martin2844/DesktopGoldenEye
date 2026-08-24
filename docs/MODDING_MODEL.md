@@ -9,7 +9,10 @@ new project → edit Lua → run immediately → see attributed errors
 → validate → package one ZIP → install on Windows or Linux
 ```
 
-A mod author should not need to build the runtime, link C++, calculate RDRAM addresses, or redistribute a modified ROM. Native recomp mods remain available for experts, but they are not the teaching path.
+A mod author should not need to build the runtime, link C++, calculate RDRAM
+addresses, or redistribute a modified ROM. A future native expert lane may
+remain available where the qualified runtime supports it, but it is not the
+teaching path.
 
 ## Package format
 
@@ -228,7 +231,10 @@ It should reject an archive that resembles a ROM or exceeds declared asset const
 
 ## Native expert lane
 
-Native mods use the pinned N64ModernRuntime/N64Recomp facilities for code patches, symbol hooks, and new compiled behavior. They declare `native_code`, exact ABI compatibility, architecture artifacts, and platform support.
+A future native lane must use facilities exposed by a release-qualified runtime
+for code patches, symbol hooks, and new compiled behavior. Packages declare
+`native_code`, exact runtime/ABI compatibility, architecture artifacts, and
+platform support. v0.1 exposes no public native-mod ABI.
 
 A native package may expose a safe operation to Lua through a registered extension Interface. It must not replace the standard `mod` root or make all Lua packages native-dependent. A future Android port would require arm64 code and stricter packaging; a PC-only native mod must then be visibly incompatible rather than failing at load.
 

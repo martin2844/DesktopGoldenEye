@@ -13,6 +13,8 @@ Verified locally:
 
 - the package builder verifies and allowlists the checksum-pinned upstream core;
 - z64, v64, and n64 byte orders are validated by size, header, and exact SHA-1;
+- ROMs selected from paths containing spaces launch through a private local
+  alias without changing the user's original file;
 - the supplied v64-order ROM boots to a responsive `GOLDENEYE - Running` window;
 - Modern FPS mouse/WASD controls and quality rendering work in fullscreen and
   windowed modes;
@@ -20,9 +22,11 @@ Verified locally:
   sniper aim/zoom;
 - launcher settings cover display mode, resolution, quality, aspect, FOV,
   texture cache, mouse profile, focus behavior, and save backups;
+- a per-install runtime guard prevents concurrent sessions from sharing the
+  same active runtime and save tree;
 - the portable ZIP is ROM-free, state-free, save-clean, and hash-consistent;
 - the single EXE extracts without elevation and preserves settings/saves across
-  payload updates.
+  payload updates while refusing to replace an unrecognized directory.
 
 ## Public package policy
 

@@ -18,8 +18,9 @@ The release workflow runs these checks on Windows:
 ```
 
 These tests cover allow/deny lists, component hashes, ROM/state/save leakage,
-corrupted upstream input, first portable install, update preservation, malformed
-payload rejection, and rollback.
+corrupted upstream input, first portable install, unchanged-payload no-op,
+update preservation, malformed payload rejection, rollback, rejected test-cache
+paths, and protection of unrecognized pre-existing directories.
 
 ## Private ROM qualification
 
@@ -32,10 +33,11 @@ Run only with a legally obtained, unmodified US GoldenEye ROM:
 ```
 
 The test derives temporary z64, v64, and n64 byte-order fixtures from the private
-ROM, verifies rejection of an unsupported same-size image, exercises renderer
-and input configuration, proves changed-save snapshots and retention, checks
+ROM, verifies missing, wrong-size, and unsupported same-size image rejection,
+exercises a ROM selected from a path containing spaces, checks renderer and input
+configuration, proves changed-save snapshots and retention, checks
 diagnostics/core selection, and runs the windowed cursor-capture regression.
-Temporary ROM variants are deleted before the test returns.
+Temporary ROM variants and launch aliases are deleted before the test returns.
 
 The final manual gate launches the exact portable payload and confirms a
 responsive `GOLDENEYE - Running` window. Never commit the ROM, saves, launcher

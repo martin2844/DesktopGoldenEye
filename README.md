@@ -50,7 +50,8 @@ folder, and run `DesktopGoldenEye.cmd`.
   At launch, a private hard link—or a local runtime copy when drives differ—is
   created to accommodate the upstream core's legacy path parser.
 - Automatic save backups, diagnostics, component hashes, source revision, and a
-  file-level component inventory.
+  file-level component inventory. A per-install launch guard prevents two game
+  sessions from sharing the same runtime and save tree.
 - A single self-extracting EXE plus a conventional portable ZIP.
 
 ## Default controls
@@ -116,6 +117,20 @@ process and [Desktop Release](docs/DESKTOP_RELEASE.md) for the release contract.
 | `scripts/` | Build, package, and integrity-test automation |
 | `docs/` | Architecture, quality baseline, mod plan, roadmap, and research notes |
 | root C sources | GPL-2.0 1964/1964GEPD core and DesktopGoldenEye changes |
+
+## Documentation
+
+- Start with [Current status](docs/CURRENT_STATUS.md),
+  [Quality baseline](docs/QUALITY_BASELINE.md), and [Testing](TESTING.md).
+- Build or publish with [Building on Windows](docs/BUILDING_WINDOWS.md) and the
+  [Desktop release contract](docs/DESKTOP_RELEASE.md).
+- Follow future work in the [Plan](docs/PLAN.md), [Roadmap](docs/ROADMAP.md),
+  [Modding model](docs/MODDING_MODEL.md),
+  [Recomp research](docs/RECOMP_RESEARCH.md), and [TODOs](TODOS.md).
+- Project policies live in [Contributing](CONTRIBUTING.md),
+  [Security](SECURITY.md), [Notice](NOTICE.md),
+  [Third-party notices](THIRD_PARTY_NOTICES.md), and the
+  [Changelog](CHANGELOG.md).
 
 ## Credits and licensing
 

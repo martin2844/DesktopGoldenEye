@@ -85,10 +85,11 @@ Installed runtime and private ROM smoke:
 ```
 
 The private test verifies all three byte orders from temporary derived fixtures,
-unsupported-image rejection, generated graphics/input settings, changed-save
-snapshots and retention, diagnostics, core selection, and the windowed cursor
-capture regression. Do not commit the ROM, temporary fixtures, screenshots
-containing game assets, launcher state, or saves. See [Testing](../TESTING.md).
+missing/wrong-size/unsupported-image rejection, a space-containing ROM path and
+its local launch alias, generated graphics/input settings, changed-save snapshots
+and retention, diagnostics, core selection, and the windowed cursor capture
+regression. Do not commit the ROM, temporary fixtures, screenshots containing
+game assets, launcher state, or saves. See [Testing](../TESTING.md).
 
 ## Release automation
 

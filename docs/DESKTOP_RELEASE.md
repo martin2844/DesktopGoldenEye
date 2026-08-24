@@ -23,7 +23,7 @@ assets, launcher state, or prebuilt save is present.
 - checksum-pinned, release-qualified upstream 1964GEPD core;
 - GLideN64, Mouse Injector, and AziAudio active plugins;
 - required runtime/configuration data and optional credited GoldenEye HUD cache;
-- launcher, defaults, saves/backups, and diagnostics;
+- launcher, defaults, save/backup management, and diagnostics;
 - GPL license, notices, component manifest, active binary hashes, source
   revision, and corresponding plugin source;
 - no unused legacy plugins.

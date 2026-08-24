@@ -8,9 +8,9 @@ All notable DesktopGoldenEye changes are documented here.
 
 - Portable Windows launcher with Modern FPS, Hybrid, and Classic control profiles.
 - Fullscreen, borderless, and windowed display settings with quality renderer controls.
-- Local validation for supported US GoldenEye ROM byte orders.
+- Local validation for supported US GoldenEye ROM byte orders and paths containing spaces.
 - Windowed mouse capture that keeps right-click sniper aim inside the game.
-- Automatic save backups, diagnostics, active-component hashes, and a ROM-free portable EXE.
+- Automatic save backups, diagnostics, a concurrent-session guard, active-component hashes, and a ROM-free portable EXE.
 - DesktopGoldenEye branding, release documentation, issue templates, and tagged-release automation.
 
 ### Changed
