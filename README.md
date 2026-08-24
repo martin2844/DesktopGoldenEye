@@ -1,72 +1,130 @@
-# DesktopGoldenEye
+<p align="center">
+  <img src="docs/assets/desktopgoldeneye-banner.png" alt="DesktopGoldenEye abstract gold aperture banner" width="100%">
+</p>
 
-An unofficial, all-in-one desktop edition of GoldenEye 007 built from [Graslu's 1964 GEPD Edition](https://github.com/Graslu/1964GEPD). Extract one package, select a legally obtained US ROM, and play with modern mouse aiming, WASD movement, high-quality rendering, launcher-managed settings, and a path toward friendly mods.
+<h1 align="center">DesktopGoldenEye</h1>
 
-> Status: both the self-contained Windows ZIP and a single portable EXE are implemented and tested. They bundle the source-built DesktopGoldenEye core, plugins, launcher, notices, and quality defaults—everything except the ROM. Linux and macOS are product targets, but the proven 1964 runtime is Windows-only and cannot simply be recompiled for them.
+<p align="center">
+  <strong>Bring your own ROM. Pick your settings. Play GoldenEye on Windows with modern mouse and WASD controls.</strong>
+</p>
 
-1964 0.8.5 is Copyright (c) 1999–2002 Joel Middendorf. This fork retains the upstream GPL-2.0 license and notices. The unmodified 1964 0.8.5 source is available from [SourceForge](https://sourceforge.net/projects/schibo/files/1964%200.8.5/1964-2002-0922.zip/1964-2002-0922.zip).
+<p align="center">
+  <a href="https://github.com/martin2844/DesktopGoldenEye/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/martin2844/DesktopGoldenEye?include_prereleases&color=c9a227"></a>
+  <img alt="Platform: Windows 10 and 11" src="https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-1f6feb">
+  <img alt="ROM not included" src="https://img.shields.io/badge/ROM-not%20included-8b1e1e">
+  <a href="LICENSE"><img alt="License: GPL-2.0" src="https://img.shields.io/badge/license-GPL--2.0-2f7d32"></a>
+</p>
 
-## Product promise
+DesktopGoldenEye is an unofficial, quality-first desktop package built on
+[Graslu's 1964 GEPD Edition](https://github.com/Graslu/1964GEPD). It combines a
+checksum-pinned upstream 1964GEPD core, GLideN64, Mouse Injector, AziAudio, a
+focused launcher, and tested defaults into one portable download. It never
+contains or downloads GoldenEye 007.
 
-A player downloads one DesktopGoldenEye EXE—or the transparent portable ZIP—opens it, and selects a legally obtained GoldenEye 007 US ROM. The launcher verifies the ROM locally; no emulator, plugin, redistributable, configuration tutorial, or command line should be required. The single EXE unpacks its DLL-based runtime into `%LOCALAPPDATA%\DesktopGoldenEye\Portable` and preserves settings/saves across payload updates. Today, the forked 1964 core provides the best Windows play experience and MGB64 hosts the experimental Lua mod slice. The longer-term goal is the same quality and mod experience on Windows, Linux, and—if a maintainable runtime qualifies—macOS.
+> [!IMPORTANT]
+> v0.1 is an unsigned Windows prerelease. Windows may show a SmartScreen warning.
+> The supported game is an unmodified US GoldenEye 007 ROM in z64, v64, or n64
+> byte order. You provide that file yourself.
 
-The project deliberately separates two lanes:
+## Download and play
 
-- **Lua lane:** the default, stable, documented interface for gameplay and content mods.
-- **Native lane:** direct C/C++ engine work for advanced changes that cannot fit the stable Lua interface.
+1. Download `DesktopGoldenEye-Windows-x86-0.1.0.0-Portable.exe` from the
+   [latest release](https://github.com/martin2844/DesktopGoldenEye/releases/latest).
+2. Open it. The portable package expands into
+   `%LOCALAPPDATA%\DesktopGoldenEye\Portable` and keeps saves/settings there.
+3. Select your legally obtained US GoldenEye 007 ROM.
+4. Choose display and quality options, then press **Play GoldenEye**.
 
-## Recommended technical direction
+Prefer a transparent archive? Download the matching ZIP, extract the complete
+folder, and run `DesktopGoldenEye.cmd`.
 
-- This source fork of 1964GEPD + GLideN64 as the immediate Windows quality Adapter. The 2002-era x86 C core builds as `DesktopGoldenEye.exe`; a release builder combines it with the checksum-pinned runtime bundle and launcher into one ROM-free archive.
-- MGB64's portable C engine and C++17 Dear ImGui shell, pinned in `runtime/mgb64`, as the experimental Lua/mod Adapter.
-- GoldenRecomp and N64Recomp remain research inputs, not the reproducible product baseline.
-- A Lua 5.4-compatible author Interface (currently hosted by Lua 5.5.1) as the friendly mod language.
-- SDL2 plus the runtime's WebGPU/OpenGL renderer paths.
-- Windows first because the quality runtime is a Win32 x86 emulator/plugin stack and is ROM-smoke-tested on this PC.
-- Linux and macOS require a separate portable quality Adapter; MGB64 is the current research candidate, not yet a release-quality substitute.
-- CMake and Ninja for native builds; Python for author tools and code generation.
+## What v0.1 includes
 
-The Runtime Interface is the stable Seam. Emulator acquisition/configuration, ROM byte order, and MGB64 environment details remain Adapter Implementations. Public release provenance is still a gate even though the local quality install and experimental mod slice both run.
+- Modern FPS input: WASD movement, direct mouse aim, click to fire, right-click
+  to aim/zoom, wheel to change weapons, and predictable cursor capture.
+- Fullscreen, borderless, and windowed display modes with configurable
+  resolution, VSync, antialiasing, anisotropic filtering, aspect ratio, and FOV.
+- A high-quality GLideN64 profile, GoldenEye timing fixes, optional unmodified
+  enhanced HUD textures, and a stable 60 FPS-oriented baseline.
+- ROM validation performed locally; the ROM is launched from its existing path
+  and is never copied into the package.
+- Automatic save backups, diagnostics, component hashes, source revision, and a
+  file-level component inventory.
+- A single self-extracting EXE plus a conventional portable ZIP.
 
-## Start here
+## Default controls
 
-1. Read [Prerequisites](docs/PREREQUISITES.md) for the ROM, tools, hardware, and current machine gaps.
-2. Read [Quality Baseline](docs/QUALITY_BASELINE.md) for the ready-to-play launcher, controls, hashes, and current tradeoffs.
-3. Read [Building on Windows](docs/BUILDING_WINDOWS.md) to reproduce the executable and all-in-one release archive.
-4. Read [Desktop Release](docs/DESKTOP_RELEASE.md) for the one-package promise and Windows/Linux/macOS gates.
-5. Read [Current Status](docs/CURRENT_STATUS.md) for exact commands and evidence from both runtime tracks.
-6. Read [Upstream Evaluation](docs/UPSTREAM_EVALUATION.md) for the baseline decision and unresolved blockers.
-7. Read [Architecture](docs/ARCHITECTURE.md) and [Modding Model](docs/MODDING_MODEL.md).
-8. Use [Roadmap](docs/ROADMAP.md) and [Plan](docs/PLAN.md) for gated implementation order.
-
-## Planning index
-
-| Document | Purpose |
+| Action | Input |
 |---|---|
-| [CURRENT_STATUS.md](docs/CURRENT_STATUS.md) | Working build, evidence, commands, manifest contract, and immediate next slice |
-| [QUALITY_BASELINE.md](docs/QUALITY_BASELINE.md) | Default Windows runtime, quality profile, mouse/WASD ownership, checksums, and launch instructions |
-| [BUILDING_WINDOWS.md](docs/BUILDING_WINDOWS.md) | Reproducible Visual Studio 2022 build and all-in-one packaging |
-| [DESKTOP_RELEASE.md](docs/DESKTOP_RELEASE.md) | One-package player contract and Windows/Linux/macOS qualification gates |
-| [PLAN.md](docs/PLAN.md) | Comprehensive execution plan and definition of done |
-| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Deep Modules, Interfaces, Seams, lifecycle, and proposed repository layout |
-| [GEN1RECOMP_PARITY.md](docs/GEN1RECOMP_PARITY.md) | Feature-for-feature experience target |
-| [MODDING_MODEL.md](docs/MODDING_MODEL.md) | Lua interface, packages, sandbox, dependencies, and author workflow |
-| [UPSTREAM_EVALUATION.md](docs/UPSTREAM_EVALUATION.md) | Evidence, baseline options, and selection gates |
-| [PREREQUISITES.md](docs/PREREQUISITES.md) | Everything needed to begin on this computer |
-| [ROADMAP.md](docs/ROADMAP.md) | Milestones with entry and exit criteria |
-| [TEST_STRATEGY.md](docs/TEST_STRATEGY.md) | ROM-free CI, private ROM tests, replay, performance, and device coverage |
-| [DECISIONS.md](docs/DECISIONS.md) | Accepted, provisional, and pending architecture decisions |
-| [RISK_REGISTER.md](docs/RISK_REGISTER.md) | Legal, platform, timing, compatibility, and community risks |
+| Move | `W` `A` `S` `D` |
+| Aim | Mouse |
+| Fire | Left mouse button |
+| Aim / sniper zoom mode | Right mouse button |
+| Zoom while aiming | `W` / `S` |
+| Previous / next weapon | Mouse wheel |
+| Reload | `R` |
+| Use / cancel | `E` |
+| Accept | `Q` |
+| Crouch | `Ctrl` |
+| Release / recapture mouse | `4` |
+| Toggle fullscreen | `Alt+Enter` |
 
-## Non-goals
+The launcher exposes Modern FPS, Hybrid, and Classic Injector profiles. The
+windowed-mode capture fix keeps the pointer inside the game client so the
+right-click desktop context menu does not interrupt sniper aiming.
 
-- Shipping a ROM, extracted assets, proprietary SDK code, or copyrighted game data.
-- Pretending the launcher alone is the final product; emulator, input-plugin, packaging, and modding improvements all belong in this fork.
-- Making Linux or macOS block a high-quality Windows release.
-- Exposing raw RDRAM offsets as the primary public mod interface.
-- Promising online multiplayer in the initial release.
-- Recreating every Gen1Recomp feature before one useful end-to-end mod works.
+## Mods
 
-## Legal and project identity
+v0.1 establishes the runtime and packaging foundation; it does **not** yet ship
+a public mod loader. ROM patches and 1964 cheats can be used manually today.
+The planned first-class lane is a launcher-managed package format with clear
+runtime compatibility, followed by a stable Lua API where the runtime permits
+it. See [Modding Model](docs/MODDING_MODEL.md) and
+[Roadmap](docs/ROADMAP.md).
 
-This project is unofficial and is not affiliated with Nintendo, Rare, Microsoft, MGM, EON Productions, or the upstream projects named here. GoldenEye 007 and related names and assets belong to their respective owners. See [NOTICE.md](NOTICE.md), [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), and [LICENSE](LICENSE).
+## Build and verify
+
+The release package is assembled on Windows 10/11 with PowerShell 5.1 or newer:
+
+```powershell
+.\scripts\package-desktopgoldeneye-windows.ps1 -Version 0.1.0.0
+.\scripts\package-desktopgoldeneye-portable-exe.ps1 `
+  -PackageArchive .\dist\DesktopGoldenEye-Windows-x86-0.1.0.0.zip
+```
+
+The packager downloads the official 1964GEPD no-Discord-RPC archive, pins it by
+SHA-1 and SHA-256, and copies only the active release stack. Jabo and other
+unused legacy plugins are not included in DesktopGoldenEye releases. Exact
+plugin source is included as `1964\source.tar.xz` inside every package.
+
+The repository also retains the forked 1964 source and a Visual Studio 2022
+build project. That modern source build is experimental and is not the v0.1
+player binary; the optimized VS2022 build still needs core-runtime work before
+it can replace the release-qualified upstream executable.
+
+See [Building on Windows](docs/BUILDING_WINDOWS.md) for the complete reproducible
+process and [Desktop Release](docs/DESKTOP_RELEASE.md) for the release contract.
+
+## Project map
+
+| Path | Purpose |
+|---|---|
+| `launcher/windows/` | Player launcher, settings, ROM validation, saves, and diagnostics |
+| `build/windows/` | Visual Studio 2022 project for the forked Win32 x86 core |
+| `packaging/windows/` | Single-EXE bootstrap |
+| `scripts/` | Build, package, and integrity-test automation |
+| `docs/` | Architecture, quality baseline, mod plan, roadmap, and research notes |
+| root C sources | GPL-2.0 1964/1964GEPD core and DesktopGoldenEye changes |
+
+## Credits and licensing
+
+DesktopGoldenEye exists because of the work of the original 1964 authors,
+Graslu and the 1964GEPD contributors, Sergey Lipskiy and the GLideN64
+contributors, the Mouse Injector contributors, Azimer and the AziAudio
+contributors, Carnivorous, Flargy, and the wider GoldenEye modding community.
+
+The active code stack is GPL-2.0. The optional GoldenEye HUD texture cache is
+distributed unchanged under CC BY-NC-ND 3.0 with its original credits. See
+[Third-party notices](THIRD_PARTY_NOTICES.md), [Notice](NOTICE.md), and
+[License](LICENSE). This project is not affiliated with Nintendo, Rare,
+Microsoft, MGM, EON Productions, or the upstream projects.

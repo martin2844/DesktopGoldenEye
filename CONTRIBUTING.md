@@ -1,15 +1,33 @@
-# Contributing during the planning phase
+# Contributing
 
-The repository is currently a feasibility and architecture plan. Small, evidence-backed changes are preferred.
+Thanks for helping make DesktopGoldenEye easier and more reliable to use.
 
-Before proposing implementation work:
+## Good first contributions
 
-1. Identify the roadmap milestone and exit criterion it advances.
-2. Record a decision in `docs/DECISIONS.md` when a public Interface, upstream dependency, artifact format, or platform promise changes.
-3. Add or update a risk when evidence changes probability or impact.
-4. Include a ROM-free test whenever possible; mark private ROM-backed tests explicitly.
-5. Keep game data and derived assets out of Git.
+- Reproduce and document a launcher, input, audio, or graphics issue.
+- Add ROM-free tests for PowerShell settings/package behavior.
+- Improve accessibility, controller profiles, diagnostics, or documentation.
+- Qualify a campaign mission and report the exact profile/GPU/Windows version.
 
-Public Lua Interfaces are compatibility promises. Do not expose a new raw address or ad hoc helper merely because it is easy to wire. First determine which GoldenEye concept owns the behavior and whether the Interface can hide more implementation detail.
+## Development rules
 
-The initial implementation should use short-lived experiment branches until the Phase 0 baseline is selected. Experimental code must not silently turn a provisional decision into a permanent public Interface.
+1. Branch from `master` and keep each change focused.
+2. Never commit ROMs, ROM fragments, extracted game assets, saves, private
+   screenshots/captures, or proprietary SDK material.
+3. Add a regression test when fixing launcher/package behavior.
+4. Build the Release configuration and run the package integrity test.
+5. Explain player-visible behavior and license/provenance changes in the PR.
+6. Do not add a bundled binary until its exact source, version, license, and
+   required notices are recorded in `THIRD_PARTY_NOTICES.md`.
+
+## Mod API proposals
+
+No public scripting API is frozen yet. Proposals should name the GoldenEye
+concept being exposed, explain why raw memory offsets are insufficient, define
+failure/compatibility behavior, and include a ROM-free test strategy. See
+[Modding Model](docs/MODDING_MODEL.md).
+
+## Verification
+
+See [Building on Windows](docs/BUILDING_WINDOWS.md). Private ROM tests stay
+local; CI and source contributions must remain game-data-free.

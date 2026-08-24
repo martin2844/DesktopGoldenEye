@@ -13,9 +13,15 @@ A mod author should not need to build the runtime, link C++, calculate RDRAM add
 
 ## Package format
 
-The implemented development format is currently an unpacked directory containing `manifest.toml` and a declared Lua entrypoint. The launcher discovers it, persists explicit enable state, and transactionally executes enabled packages on Play. See [Current Status](CURRENT_STATUS.md) for the exact v1 subset and current allowlisted API.
+No public mod loader ships in v0.1. The package and API below are the intended
+contract, not a compatibility promise yet. The first implementation should
+start with launcher-managed ROM patches and structured cheats, then add Lua
+only after a quality runtime exposes safe semantic hooks.
 
-The `.gemod` archive described below is the intended distribution format after resolver, permission, archive-safety, and reproducibility gates pass. Its JSON/TOML representation will be reconciled with the implemented schema before it freezes.
+The `.gemod` archive described below is the intended distribution format after
+resolver, permission, archive-safety, and reproducibility gates pass. Its
+JSON/TOML representation will be validated against a working implementation
+before it freezes.
 
 A `.gemod` is a reproducible ZIP with a fixed root layout:
 

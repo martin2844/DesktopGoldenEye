@@ -2,86 +2,90 @@
 
 ## Requirements
 
-- Windows 10 or 11, x64
-- Visual Studio 2022 Build Tools or Visual Studio 2022
-- The **Desktop development with C++** workload, MSVC v143 x86/x64 tools, and a Windows 10/11 SDK
-- PowerShell 5.1 or newer
-- A checkout of this repository; WSL-hosted checkouts are supported
+- Windows 10 or 11 on an x64 host
+- Visual Studio 2022 or Build Tools 2022
+- **Desktop development with C++**, MSVC v143 x86/x64 tools, and a Windows SDK
+- Windows PowerShell 5.1 or newer
+- Git
 
-No ROM is needed to compile. A legally obtained, unmodified US GoldenEye ROM is needed only for the private gameplay smoke test.
+No ROM is needed to build or package. A legally obtained, unmodified US ROM is
+used only for private gameplay qualification.
 
-## Build
+## Experimental source build
 
-From PowerShell in the repository:
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass `
-  -File .\scripts\build-1964-windows.ps1 `
-  -Configuration Release
-```
-
-Output:
-
-```text
-out\Release\DesktopGoldenEye.exe
-```
-
-The source predates case-sensitive Windows filesystems and contains include-name case mismatches. When invoked from a WSL UNC checkout, the script stages only build inputs under `%LOCALAPPDATA%\DesktopGoldenEye\build-source`, builds there, and copies the result back. The repository remains the source of truth.
-
-The inherited code emits legacy compiler warnings. Warnings are visible intentionally; a successful build must end with the produced executable message and a zero exit code.
-
-## Install beside the verified quality runtime
-
-Pass an existing launcher install root:
+From PowerShell in the repository root:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass `
-  -File .\scripts\build-1964-windows.ps1 `
-  -Configuration Release `
-  -InstallRoot "$env:LOCALAPPDATA\DesktopGoldenEye"
+.\scripts\build-1964-windows.ps1 -Configuration Release
 ```
 
-The script verifies the expected core and active plugins, then copies only `DesktopGoldenEye.exe`. It never replaces `1964.exe`. The launcher automatically prefers the DesktopGoldenEye core when present and retains the old Q Branch and upstream filenames as migration fallbacks.
+Output: `out\Release\DesktopGoldenEye.exe` (Win32/x86). A WSL-hosted checkout
+is supported: the script stages legacy case-insensitive inputs under
+`%LOCALAPPDATA%\DesktopGoldenEye\build-source` and copies the result back.
 
-## Build the all-in-one player archive
+This proves the retained fork still compiles with current tools. It is not the
+v0.1 release binary: the optimized VS2022 build currently faults in the legacy
+TLB path after ROM startup. The v0.1 package therefore uses the exact optimized
+core from the pinned official 1964GEPD bundle.
+
+## Build the portable ZIP
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass `
-  -File .\scripts\package-desktopgoldeneye-windows.ps1 `
-  -Version 0.1.0
+.\scripts\package-desktopgoldeneye-windows.ps1 -Version 0.1.0.0
 ```
 
-This builds the core, downloads and checksum-verifies the upstream runtime when needed, and produces:
+The script:
 
-```text
-dist\DesktopGoldenEye-Windows-x86-0.1.0.zip
-```
+1. downloads the official 1964GEPD no-Discord-RPC archive if needed;
+2. verifies its pinned SHA-1 and SHA-256;
+3. copies the upstream optimized core plus only the active GLideN64, Mouse
+   Injector, and AziAudio stack, required
+   configuration/runtime files, corresponding source, and the credited
+   GoldenEye HUD cache;
+4. removes all player state/saves and scans for ROM-like files;
+5. writes component and binary hashes to `release-manifest.json`;
+6. runs the package integrity test.
 
-The archive contains the core, graphics/audio/input plugins, launcher, quality profiles, notices, source pointer, and a release manifest with hashes. It contains no ROM. The player extracts it, runs `DesktopGoldenEye.cmd`, selects their ROM, and presses Play.
+Output: `dist\DesktopGoldenEye-Windows-x86-0.1.0.0.zip`.
 
 ## Build the single portable EXE
 
-After building the ZIP:
-
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass `
-  -File .\scripts\package-desktopgoldeneye-portable-exe.ps1 `
-  -PackageArchive .\dist\DesktopGoldenEye-Windows-x86-0.1.0.zip
+.\scripts\package-desktopgoldeneye-portable-exe.ps1 `
+  -PackageArchive .\dist\DesktopGoldenEye-Windows-x86-0.1.0.0.zip
 ```
 
-This uses the Windows IExpress packager already included with Windows and produces `DesktopGoldenEye-Windows-x86-0.1.0-Portable.exe`. No .NET SDK, NSIS, Inno Setup, or 7-Zip installation is required.
+Output: `dist\DesktopGoldenEye-Windows-x86-0.1.0.0-Portable.exe`.
 
-1964 and its plugins cannot execute directly from inside one PE file: Windows must load the plugin DLLs from disk, and the game needs writable saves/configuration. On first run the EXE silently installs its verified payload under `%LOCALAPPDATA%\DesktopGoldenEye\Portable`, then opens the normal launcher. Later runs reuse that cache; version changes preserve `launcher-state.json`, saves, and save backups.
+The wrapper uses Windows IExpress. On first run it expands the verified payload
+to `%LOCALAPPDATA%\DesktopGoldenEye\Portable`; later versions replace only the
+payload while preserving `launcher-state.json`, `1964\save`, and
+`save-backups`. The executable is unsigned in v0.1.
 
-## Verify without committing game data
+## Run tests
 
-After Setup, run:
+Package integrity (ROM-free):
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass `
-  -File "$env:LOCALAPPDATA\DesktopGoldenEye\launcher\Test-GoldenEye.Runtime.ps1" `
-  -RomPath 'D:\Roms\GoldenEye007USA.v64' `
-  -InstallRoot "$env:LOCALAPPDATA\DesktopGoldenEye"
+.\scripts\test-desktopgoldeneye-package.ps1 `
+  -PackageRoot .\.work\package-windows\DesktopGoldenEye-Windows-x86-0.1.0.0
 ```
 
-The test validates ROM identity, generated graphics/input settings, save-backup deduplication, diagnostics, and windowed capture. A human mission test is still required for subjective mouse latency, audio, and visual quality.
+Installed runtime and private ROM smoke:
+
+```powershell
+.\launcher\windows\Test-GoldenEye.Runtime.ps1 `
+  -RomPath 'D:\Roms\007 - GoldenEye (USA).n64' `
+  -InstallRoot "$env:LOCALAPPDATA\DesktopGoldenEye\Portable"
+```
+
+The private test verifies ROM identity, generated graphics/input settings,
+save-backup deduplication, diagnostics, core selection, and the windowed cursor
+capture regression. Do not commit the ROM, screenshots containing game assets,
+launcher state, or saves.
+
+## Release automation
+
+`.github/workflows/release.yml` builds and validates Windows artifacts on pull
+requests and manual runs. A `v*` tag also publishes the ZIP, portable EXE, and
+SHA-256 checksum file to a GitHub prerelease.
