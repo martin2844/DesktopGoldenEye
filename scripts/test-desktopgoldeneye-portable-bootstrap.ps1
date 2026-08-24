@@ -19,7 +19,8 @@ function Invoke-Bootstrap {
         [string]$CacheParentOverride = $cacheParent
     )
 
-    $process = Start-Process -FilePath (Join-Path $PSHOME 'powershell.exe') -ArgumentList @(
+    $currentPowerShell = (Get-Process -Id $PID).Path
+    $process = Start-Process -FilePath $currentPowerShell -ArgumentList @(
         '-NoProfile',
         '-ExecutionPolicy', 'Bypass',
         '-File', ('"{0}"' -f $bootstrap),
