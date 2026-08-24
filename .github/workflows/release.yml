@@ -1,0 +1,67 @@
+name: Windows build and release
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-2022
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Select package version
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REF -like 'refs/tags/v*') {
+            $version = $env:GITHUB_REF_NAME.TrimStart('v')
+          } else {
+            $version = "0.0.0.0-ci.$env:GITHUB_RUN_NUMBER"
+          }
+          "DG_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Build, package, and validate
+        shell: pwsh
+        run: |
+          .\scripts\package-desktopgoldeneye-windows.ps1 -Version $env:DG_VERSION
+          .\scripts\package-desktopgoldeneye-portable-exe.ps1 `
+            -PackageArchive ".\dist\DesktopGoldenEye-Windows-x86-$env:DG_VERSION.zip"
+
+      - name: Write SHA-256 checksums
+        shell: pwsh
+        run: |
+          Get-FileHash .\dist\*.zip, .\dist\*.exe -Algorithm SHA256 |
+            ForEach-Object { "$($_.Hash.ToLowerInvariant())  $([IO.Path]::GetFileName($_.Path))" } |
+            Set-Content .\dist\SHA256SUMS.txt -Encoding ascii
+          Get-Content .\dist\SHA256SUMS.txt
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: DesktopGoldenEye-Windows-${{ env.DG_VERSION }}
+          path: |
+            dist/*.zip
+            dist/*.exe
+            dist/SHA256SUMS.txt
+          if-no-files-found: error
+
+      - name: Publish tagged prerelease
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $assets = Get-ChildItem .\dist\*.zip, .\dist\*.exe, .\dist\SHA256SUMS.txt |
+            ForEach-Object { $_.FullName }
+          gh release create $env:GITHUB_REF_NAME @assets `
+            --repo $env:GITHUB_REPOSITORY `
+            --title "DesktopGoldenEye $env:DG_VERSION" `
+            --prerelease `
+            --generate-notes
