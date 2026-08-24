@@ -18,7 +18,8 @@ Updated 2026-08-24.
 - Windowed startup centers the pointer inside the client before Mouse Injector captures it, preventing right-click sniper zoom from opening the desktop context menu.
 - Save files receive content-aware rolling backups with SHA-256 manifests, and the launcher can copy privacy-conscious diagnostics including selected-core/plugin hashes and ROM verification status.
 - The exact user ROM boots into a responsive `GOLDENEYE - Running` window and renders the intro in fullscreen and windowed modes.
-- A ROM-free all-in-one archive builder creates `dist\DesktopGoldenEye-Windows-x86-<version>.zip`; its root `DesktopGoldenEye.cmd` is the player entry point.
+- A ROM-free all-in-one archive builder creates `dist\DesktopGoldenEye-Windows-x86-<version>.zip`; its root `DesktopGoldenEye.cmd` is the transparent portable-folder entry point.
+- A second builder wraps that validated ZIP as one `DesktopGoldenEye-...-Portable.exe`. First launch extracts to the user's local application data without elevation; cached launches reuse the payload and preserve saves/settings across updates.
 - The source ROM is not copied. A byte-order-correct NTFS hard-link supplies the correct `.v64` extension because the user's file is named `.n64` despite containing v64 byte order.
 
 ### Experimental mod track
@@ -58,7 +59,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
   -InstallRoot 'C:\Users\martin\Source\DesktopGoldenEye'
 ```
 
-The script locates Visual Studio 2022 MSBuild, stages WSL checkouts onto a case-insensitive NTFS path when necessary, builds the Win32 core, and installs it as `DesktopGoldenEye.exe` without overwriting `1964.exe`. `scripts/package-desktopgoldeneye-windows.ps1` produces the complete ROM-free player zip.
+The script locates Visual Studio 2022 MSBuild, stages WSL checkouts onto a case-insensitive NTFS path when necessary, builds the Win32 core, and installs it as `DesktopGoldenEye.exe` without overwriting `1964.exe`. `scripts/package-desktopgoldeneye-windows.ps1` produces the complete ROM-free player ZIP; `scripts/package-desktopgoldeneye-portable-exe.ps1` turns the validated ZIP into one player-facing EXE.
 
 ## Reproduce the experimental mod track
 

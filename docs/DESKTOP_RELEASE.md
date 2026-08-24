@@ -2,7 +2,7 @@
 
 ## Player promise
 
-Every supported platform ships one signed/checksummed archive or app bundle containing everything needed except copyrighted game data. The first-run journey is:
+Every supported platform ships one signed/checksummed executable, archive, or app bundle containing everything needed except copyrighted game data. The first-run journey is:
 
 1. download and extract/install DesktopGoldenEye;
 2. open DesktopGoldenEye;
@@ -10,7 +10,7 @@ Every supported platform ships one signed/checksummed archive or app bundle cont
 4. receive a clear verification result;
 5. press Play with Modern FPS controls and the recommended quality profile already active.
 
-The supported journey never asks the player to locate an emulator, select plugins, edit INI files, install a mod loader, use a terminal, or move the ROM into the application directory.
+The supported journey never asks the player to locate an emulator, select plugins, edit INI files, install a mod loader, use a terminal, or move the ROM into the application directory. Windows offers both a single self-extracting EXE and a transparent portable ZIP.
 
 ## Release contents
 
@@ -30,7 +30,7 @@ Each platform artifact must include:
 
 | Platform | Current status | Runtime direction | Release gate |
 |---|---|---|---|
-| Windows x86/x64 host | Working alpha package | Forked 1964 Win32 x86 core + GLideN64 + Mouse Injector | Human mission qualification, clean-machine test, third-party redistribution audit, signing |
+| Windows x86/x64 host | Working ZIP and single-EXE alpha packages | Forked 1964 Win32 x86 core + GLideN64 + Mouse Injector | Human mission qualification, clean-machine test, third-party redistribution audit, signing |
 | Linux x86-64 | Research | Portable MGB64/decomp-derived Adapter or another quality-equivalent open runtime | Rendering/input/audio parity and same ROM/mod contracts |
 | macOS Apple Silicon | Feasibility target | Native arm64 portable runtime with Metal/WebGPU-class renderer; not the 1964 Win32 dynarec/plugins | Apple Silicon build, notarized app bundle, sandbox-safe ROM picker/saves, mission parity |
 | macOS Intel | Unscheduled | Only if maintenance demand justifies a second macOS architecture | Same as Apple Silicon plus supported hardware evidence |

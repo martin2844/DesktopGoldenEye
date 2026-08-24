@@ -2,13 +2,13 @@
 
 An unofficial, all-in-one desktop edition of GoldenEye 007 built from [Graslu's 1964 GEPD Edition](https://github.com/Graslu/1964GEPD). Extract one package, select a legally obtained US ROM, and play with modern mouse aiming, WASD movement, high-quality rendering, launcher-managed settings, and a path toward friendly mods.
 
-> Status: the self-contained Windows package is implemented and ROM-backed tested. It bundles the source-built DesktopGoldenEye core, required plugins, launcher, notices, and quality defaults—everything except the ROM. Linux and macOS are product targets, but the proven 1964 runtime is Windows-only and cannot simply be recompiled for them.
+> Status: both the self-contained Windows ZIP and a single portable EXE are implemented and tested. They bundle the source-built DesktopGoldenEye core, plugins, launcher, notices, and quality defaults—everything except the ROM. Linux and macOS are product targets, but the proven 1964 runtime is Windows-only and cannot simply be recompiled for them.
 
 1964 0.8.5 is Copyright (c) 1999–2002 Joel Middendorf. This fork retains the upstream GPL-2.0 license and notices. The unmodified 1964 0.8.5 source is available from [SourceForge](https://sourceforge.net/projects/schibo/files/1964%200.8.5/1964-2002-0922.zip/1964-2002-0922.zip).
 
 ## Product promise
 
-A player downloads one DesktopGoldenEye archive, extracts it, double-clicks the launcher, and selects a legally obtained GoldenEye 007 US ROM. The launcher verifies the ROM locally; no emulator, plugin, redistributable, configuration tutorial, or command line should be required. Today, the forked 1964 core provides the best Windows play experience and MGB64 hosts the experimental Lua mod slice. The longer-term goal is the same quality and mod experience on Windows, Linux, and—if a maintainable runtime qualifies—macOS.
+A player downloads one DesktopGoldenEye EXE—or the transparent portable ZIP—opens it, and selects a legally obtained GoldenEye 007 US ROM. The launcher verifies the ROM locally; no emulator, plugin, redistributable, configuration tutorial, or command line should be required. The single EXE unpacks its DLL-based runtime into `%LOCALAPPDATA%\DesktopGoldenEye\Portable` and preserves settings/saves across payload updates. Today, the forked 1964 core provides the best Windows play experience and MGB64 hosts the experimental Lua mod slice. The longer-term goal is the same quality and mod experience on Windows, Linux, and—if a maintainable runtime qualifies—macOS.
 
 The project deliberately separates two lanes:
 

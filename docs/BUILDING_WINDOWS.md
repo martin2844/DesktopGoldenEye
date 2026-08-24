@@ -59,6 +59,20 @@ dist\DesktopGoldenEye-Windows-x86-0.1.0.zip
 
 The archive contains the core, graphics/audio/input plugins, launcher, quality profiles, notices, source pointer, and a release manifest with hashes. It contains no ROM. The player extracts it, runs `DesktopGoldenEye.cmd`, selects their ROM, and presses Play.
 
+## Build the single portable EXE
+
+After building the ZIP:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+  -File .\scripts\package-desktopgoldeneye-portable-exe.ps1 `
+  -PackageArchive .\dist\DesktopGoldenEye-Windows-x86-0.1.0.zip
+```
+
+This uses the Windows IExpress packager already included with Windows and produces `DesktopGoldenEye-Windows-x86-0.1.0-Portable.exe`. No .NET SDK, NSIS, Inno Setup, or 7-Zip installation is required.
+
+1964 and its plugins cannot execute directly from inside one PE file: Windows must load the plugin DLLs from disk, and the game needs writable saves/configuration. On first run the EXE silently installs its verified payload under `%LOCALAPPDATA%\DesktopGoldenEye\Portable`, then opens the normal launcher. Later runs reuse that cache; version changes preserve `launcher-state.json`, saves, and save backups.
+
 ## Verify without committing game data
 
 After Setup, run:
