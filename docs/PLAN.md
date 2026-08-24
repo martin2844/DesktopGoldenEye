@@ -54,7 +54,7 @@ provenance + runnable game
 
 ## Guiding decisions
 
-1. **Portable C plus C++17 remain the native/mod implementation languages.** The immediate 1964GEPD Quality Adapter is an external GPL C runtime; the launcher does not fork it merely to claim one language.
+1. **Portable C plus C++17 remain the native/mod implementation languages.** DesktopGoldenEye now maintains the immediate GPL C quality core directly; the experimental MGB64 host remains C/C++17.
 2. **Lua 5.4 is the default mod language.** It gives the short, reloadable author loop seen in Gen1Recomp.
 3. **Windows is the first executable baseline.** It is built and ROM-smoke-tested through MSYS2/MinGW64. Linux becomes the second PC Adapter after the Lua vertical slice.
 4. **Python owns author/build tools.** It is suitable for schemas, scaffolding, lint orchestration, deterministic packaging, and inspection.

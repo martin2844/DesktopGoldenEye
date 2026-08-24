@@ -14,7 +14,7 @@ $buildRoot = $repositoryRoot
 # intentionally relies on Windows' case-insensitive include lookup, so stage
 # only the build inputs on NTFS when this script is invoked through WSL.
 if ($repositoryRoot.StartsWith('\\')) {
-    $buildRoot = Join-Path $env:LOCALAPPDATA '1964QBranch\build-source'
+    $buildRoot = Join-Path $env:LOCALAPPDATA 'DesktopGoldenEye\build-source'
     if (Test-Path -LiteralPath $buildRoot) {
         Remove-Item -LiteralPath $buildRoot -Recurse -Force
     }
@@ -45,11 +45,11 @@ if (-not (Test-Path -LiteralPath $msbuild -PathType Leaf)) {
 & $msbuild $project /m /restore /p:Configuration=$Configuration /p:Platform=Win32 /v:minimal
 if ($LASTEXITCODE -ne 0) { throw "1964 $Configuration build failed with exit code $LASTEXITCODE." }
 
-$builtExecutable = Join-Path $buildRoot "out\$Configuration\1964-qbranch.exe"
+$builtExecutable = Join-Path $buildRoot "out\$Configuration\DesktopGoldenEye.exe"
 if (-not (Test-Path -LiteralPath $builtExecutable -PathType Leaf)) {
     throw "MSBuild succeeded but did not produce '$builtExecutable'."
 }
-$executable = Join-Path $repositoryRoot "out\$Configuration\1964-qbranch.exe"
+$executable = Join-Path $repositoryRoot "out\$Configuration\DesktopGoldenEye.exe"
 if ($buildRoot -ne $repositoryRoot) {
     New-Item -ItemType Directory -Path (Split-Path -Parent $executable) -Force | Out-Null
     Copy-Item -LiteralPath $builtExecutable -Destination $executable -Force
@@ -61,7 +61,7 @@ if ($InstallRoot) {
             throw "Install root is not a complete quality runtime; missing 1964\$relativePath"
         }
     }
-    $installedExecutable = Join-Path $runtime '1964-qbranch.exe'
+    $installedExecutable = Join-Path $runtime 'DesktopGoldenEye.exe'
     Copy-Item -LiteralPath $executable -Destination $installedExecutable -Force
     Write-Host "Installed $installedExecutable"
 }

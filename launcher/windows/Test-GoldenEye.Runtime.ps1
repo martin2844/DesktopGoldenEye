@@ -21,7 +21,8 @@ $required = @(
     'launcher\GoldenEye.ps1',
     'launcher\GoldenEye.Launcher.ps1',
     'launcher\GoldenEye.Runtime.psm1',
-    'Play GoldenEye (Quality).cmd',
+    'launcher\DesktopGoldenEye.cmd',
+    'DesktopGoldenEye.cmd',
     'launcher-state.json'
 )
 foreach ($relativePath in $required) {
@@ -55,18 +56,22 @@ if ($firstBackup -ne $secondBackup) {
 }
 
 $diagnostics = Get-GoldenEyeDiagnostics -InstallRoot $InstallRoot
-@('1964 GEPD Q Branch diagnostics', 'Runtime complete: True', 'Selected core:', 'ROM: verified') | ForEach-Object {
+@('DesktopGoldenEye diagnostics', 'Runtime complete: True', 'Selected core:', 'ROM: verified') | ForEach-Object {
     if (-not $diagnostics.Contains($_)) { throw "Diagnostics output is missing: $_" }
 }
-$qBranchExecutable = Join-Path $InstallRoot '1964\1964-qbranch.exe'
-if (Test-Path -LiteralPath $qBranchExecutable -PathType Leaf) {
+$desktopExecutable = Join-Path $InstallRoot '1964\DesktopGoldenEye.exe'
+$legacyQBranchExecutable = Join-Path $InstallRoot '1964\1964-qbranch.exe'
+if (Test-Path -LiteralPath $desktopExecutable -PathType Leaf) {
     $selectedExecutable = Get-QualityRuntimeExecutable -InstallRoot $InstallRoot
-    if ((Split-Path -Leaf $selectedExecutable) -ne '1964-qbranch.exe') {
-        throw 'The launcher did not prefer the installed Q Branch core.'
+    if ((Split-Path -Leaf $selectedExecutable) -ne 'DesktopGoldenEye.exe') {
+        throw 'The launcher did not prefer the installed DesktopGoldenEye core.'
     }
-    if (-not $diagnostics.Contains('Selected core: 1964-qbranch.exe')) {
-        throw 'Diagnostics did not identify the selected Q Branch core.'
+    if (-not $diagnostics.Contains('Selected core: DesktopGoldenEye.exe')) {
+        throw 'Diagnostics did not identify the selected DesktopGoldenEye core.'
     }
+}
+elseif (Test-Path -LiteralPath $legacyQBranchExecutable -PathType Leaf) {
+    Write-Warning 'Using legacy 1964-qbranch.exe filename; rebuild to install DesktopGoldenEye.exe.'
 }
 
 $mouseProfile = @(Get-Content -LiteralPath (Join-Path $InstallRoot '1964\plugin\mouseinjector.ini') | ForEach-Object { [int]$_ })

@@ -7,18 +7,18 @@ Updated 2026-08-24.
 ### Quality player track
 
 - This repository is now a real fork of `Graslu/1964GEPD`, with upstream preserved as a Git remote and in the branch ancestry.
-- The 1964 x86 C core builds with Visual Studio 2022 Build Tools through `scripts/build-1964-windows.ps1`, producing `out/Release/1964-qbranch.exe`.
+- The 1964 x86 C core builds with Visual Studio 2022 Build Tools through `scripts/build-1964-windows.ps1`, producing `out/Release/DesktopGoldenEye.exe`.
 - The native command-line parser now handles quoted ROM directory and filename arguments, preserves case, bounds output, and uses the `-r` directory during direct launch.
 - The official no-Discord-RPC release remains pinned by SHA-1 and SHA-256 and supplies the proven GLideN64, AziAudio, Mouse Injector, configuration, and notice files.
 - The Windows launcher validates all three byte orders of the unmodified US ROM by exact raw SHA-1 instead of trusting the filename extension.
-- The launcher prefers the source-built Q Branch core when present and falls back to the official core when it is absent.
+- The launcher prefers the source-built DesktopGoldenEye core and retains the legacy Q Branch/upstream executables as fallbacks.
 - It configures GLideN64 for display mode/resolution, aspect ratio, V-sync, MSAA or FXAA, anisotropic filtering, FPS overlay, accurate framebuffer/LOD/lighting/coverage settings, and the bundled high-resolution HUD cache.
 - Mouse/WASD uses upstream Mouse Injector 2.3. The project did not implement this input path.
 - The launcher owns Modern FPS, GoldenEye hybrid, and Classic control presets; sensitivity, acceleration, invert-Y, head-roll reduction, FOV, and focus pause are configurable.
 - Windowed startup centers the pointer inside the client before Mouse Injector captures it, preventing right-click sniper zoom from opening the desktop context menu.
 - Save files receive content-aware rolling backups with SHA-256 manifests, and the launcher can copy privacy-conscious diagnostics including selected-core/plugin hashes and ROM verification status.
 - The exact user ROM boots into a responsive `GOLDENEYE - Running` window and renders the intro in fullscreen and windowed modes.
-- A ready-to-play command exists at `C:\Users\martin\Source\goldeneye-mod-platform\ready-to-play\GoldenEye-Quality\Play GoldenEye (Quality).cmd`.
+- A ROM-free all-in-one archive builder creates `dist\DesktopGoldenEye-Windows-x86-<version>.zip`; its root `DesktopGoldenEye.cmd` is the player entry point.
 - The source ROM is not copied. A byte-order-correct NTFS hard-link supplies the correct `.v64` extension because the user's file is named `.n64` despite containing v64 byte order.
 
 ### Experimental mod track
@@ -42,12 +42,12 @@ The Lua Interface is intentionally tiny. Mods can log and toggle the semantic al
 Double-click:
 
 ```text
-C:\Users\martin\Source\goldeneye-mod-platform\ready-to-play\GoldenEye-Quality\Play GoldenEye (Quality).cmd
+C:\Users\martin\Source\DesktopGoldenEye\DesktopGoldenEye.cmd
 ```
 
 Press `4` if mouse injection/cursor lock is not active. The launcher is the source of truth for normal controls and graphics; `Ctrl+I` remains available in windowed mode for inspecting the upstream plugin dialog.
 
-## Rebuild and install the Q Branch core
+## Rebuild and package DesktopGoldenEye
 
 From Windows PowerShell in the checkout:
 
@@ -55,17 +55,17 @@ From Windows PowerShell in the checkout:
 powershell.exe -NoProfile -ExecutionPolicy Bypass `
   -File .\scripts\build-1964-windows.ps1 `
   -Configuration Release `
-  -InstallRoot 'C:\Users\martin\Source\goldeneye-mod-platform\ready-to-play\GoldenEye-Quality'
+  -InstallRoot 'C:\Users\martin\Source\DesktopGoldenEye'
 ```
 
-The script locates Visual Studio 2022 MSBuild, stages WSL checkouts onto a case-insensitive NTFS path when necessary, builds the Win32 core, and installs it as `1964-qbranch.exe` without overwriting `1964.exe`.
+The script locates Visual Studio 2022 MSBuild, stages WSL checkouts onto a case-insensitive NTFS path when necessary, builds the Win32 core, and installs it as `DesktopGoldenEye.exe` without overwriting `1964.exe`. `scripts/package-desktopgoldeneye-windows.ps1` produces the complete ROM-free player zip.
 
 ## Reproduce the experimental mod track
 
 From WSL:
 
 ```sh
-cd /home/martin/goldeneye-mod-platform
+cd /home/martin/DesktopGoldenEye
 ./scripts/dev-windows.sh all
 ```
 
@@ -106,7 +106,7 @@ api.game.unlock_all_levels(true)
 
 ## Next vertical slice
 
-1. Human-test Dam plus two renderer-stress missions with the Q Branch quality presets and record remaining input/audio/render defects.
+1. Human-test Dam plus two renderer-stress missions with the DesktopGoldenEye quality presets and record remaining input/audio/render defects.
 2. Add a clean-machine packaging job with a complete plugin/asset license inventory and checksummed artifacts.
 3. Move the Mouse Injector source into a reproducible plugin build, then add controller and accessibility presets.
 4. Choose the first mod bridge: structured cheats/ROM patches in 1964GEPD, or a semantic API hosted by a quality-equivalent native runtime.

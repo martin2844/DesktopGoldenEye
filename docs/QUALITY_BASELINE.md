@@ -2,7 +2,7 @@
 
 ## Decision
 
-The default player runtime is the source-built **1964GEPD Q Branch core** combined with the checksum-pinned upstream no-Discord-RPC plugin bundle. This is the best currently proven route for the project's immediate requirements: the player's ordinary US N64 ROM, Windows, 60 fps fixes specific to GoldenEye, mature mouse/WASD input, and a renderer with substantially better GoldenEye coverage than the experimental MGB64 port.
+The default player runtime is the source-built **DesktopGoldenEye core** combined with the checksum-pinned upstream no-Discord-RPC plugin bundle. This is the best currently proven route for the project's immediate requirements: the player's ordinary US N64 ROM, Windows, 60 fps fixes specific to GoldenEye, mature mouse/WASD input, and a renderer with substantially better GoldenEye coverage than the experimental MGB64 port.
 
 MGB64 remains the editable **Experimental Adapter** for the Lua mod work. It is not the default player runtime while its mouse feel, textures, fog, glass, and other rendering paths remain visibly behind the quality baseline.
 
@@ -12,7 +12,7 @@ MGB64 remains the editable **Experimental Adapter** for the Lua mod work. It is 
                               │
               ┌───────────────┴────────────────┐
               ▼                                ▼
-   1964 Q Branch Quality Adapter     MGB64 Experimental Adapter
+   DesktopGoldenEye Windows Adapter  MGB64 Experimental Adapter
    best game experience now          editable Lua/mod research
    ordinary US ROM                    ordinary US ROM
    Windows only                       Windows/Linux source paths
@@ -33,7 +33,7 @@ The Windows setup Module:
 7. selects `Mouse_Injector.dll`, `AziAudio.dll`, and the latest bundled `GLideN64.dll`;
 8. creates a private launcher-state file containing the ROM path and display/input preferences, never ROM bytes;
 9. creates a hard-link beside a ROM only when its filename or extension would misrepresent the verified byte order;
-10. prefers an installed `1964-qbranch.exe`, with `1964.exe` retained as a compatibility fallback.
+10. prefers `DesktopGoldenEye.exe`, with legacy Q Branch and upstream filenames retained as compatibility fallbacks.
 
 Pinned release evidence:
 
@@ -44,7 +44,7 @@ SHA-1:   d7c7099a41e8ae3427eae22d8f95796d9dfc44a8
 SHA-256: dad8ce4cbdddcb8447ce59bf194ad0acf4c237a45a566cfff7d3a1310cce6f6e
 ```
 
-The repository does not vendor or rehost this binary bundle. The installer retrieves the exact upstream asset. The Q Branch core is built from this repository; the bundle supplies plugins and optional cached HUD textures under multiple licenses. Direct upstream retrieval remains the conservative plugin/asset distribution model until the binary-component notice audit is finished. See [Third-party component inventory](../THIRD_PARTY_NOTICES.md).
+The source repository does not commit the binary bundle. The release builder retrieves the exact upstream asset and combines it with the source-built DesktopGoldenEye core. The bundle supplies plugins and optional cached HUD textures under multiple licenses; publishing the combined archive remains gated on the binary-component notice audit. See [Third-party component inventory](../THIRD_PARTY_NOTICES.md).
 
 ## Quality profile
 
@@ -84,10 +84,10 @@ The default is 100% mouse sensitivity with acceleration off. The launcher also o
 On the current PC:
 
 ```text
-C:\Users\martin\Source\goldeneye-mod-platform\ready-to-play\GoldenEye-Quality\Play GoldenEye (Quality).cmd
+C:\Users\martin\Source\DesktopGoldenEye\DesktopGoldenEye.cmd
 ```
 
-Double-click that command to open the Q Branch launcher, choose display and control settings, and start the game. The original ROM remains at `D:\Roms\007 - GoldenEye (USA).n64`. Its extension says n64 but its verified byte order is v64, so setup created `D:\Roms\GoldenEye007USA.v64` as a second NTFS directory entry for the same 12 MiB file—not a copied ROM.
+Double-click that command to open DesktopGoldenEye, choose display and control settings, and start the game. The original ROM remains at `D:\Roms\007 - GoldenEye (USA).n64`. Its extension says n64 but its verified byte order is v64, so the launcher creates `D:\Roms\GoldenEye007USA.v64` as a second NTFS directory entry for the same 12 MiB file—not a copied ROM.
 
 For setup from source:
 
@@ -96,27 +96,27 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
   -File .\launcher\windows\GoldenEye.ps1 `
   -Action Setup `
   -RomPath 'D:\Roms\007 - GoldenEye (USA).n64' `
-  -InstallRoot "$env:LOCALAPPDATA\GoldenEyeModPlatform"
+  -InstallRoot "$env:LOCALAPPDATA\DesktopGoldenEye"
 ```
 
 For a windowed diagnostic launch:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass `
-  -File "$env:LOCALAPPDATA\GoldenEyeModPlatform\launcher\GoldenEye.ps1" `
+  -File "$env:LOCALAPPDATA\DesktopGoldenEye\launcher\GoldenEye.ps1" `
   -Action Play -Runtime Quality `
-  -InstallRoot "$env:LOCALAPPDATA\GoldenEyeModPlatform" -Windowed
+  -InstallRoot "$env:LOCALAPPDATA\DesktopGoldenEye" -Windowed
 ```
 
-To build and install the forked core beside that runtime, follow [Building Q Branch on Windows](BUILDING_WINDOWS.md). Setup alone remains usable because it retains the official core as fallback.
+To build the core or the complete player archive, follow [Building DesktopGoldenEye on Windows](BUILDING_WINDOWS.md).
 
 ## Known limitations and next gate
 
-- Q Branch is an emulator-based 32-bit Windows runtime, not a static native recompilation.
+- The current DesktopGoldenEye runtime is an emulator-based 32-bit Windows stack, not a static native recompilation.
 - It provides ROM-hack/cheat/plugin compatibility, not the in-process Lua semantic Interface built in MGB64.
 - The upstream bundle is mature but old and can occasionally lock up or develop audio delay; its own guide recommends pause/resume for the latter.
 - Fullscreen alt-tab is fragile. Use windowed mode while changing plugins or settings.
 - Mouse Injector supports only the US GoldenEye ROM.
-- Automated evidence proves hash validation, exact bundle provenance, a reproducible source build, quoted-path native launch, launcher selection of Q Branch, successful ROM boot, a responsive running game window, GLideN64 rendering, windowed input capture, settings generation, backup deduplication, diagnostics, and clean process exit. Human mission play remains required to rate mouse smoothness, audio, and visual correctness.
+- Automated evidence proves hash validation, exact bundle provenance, a reproducible source build, quoted-path native launch, launcher selection of DesktopGoldenEye, successful ROM boot, a responsive running game window, GLideN64 rendering, windowed input capture, settings generation, backup deduplication, diagnostics, and clean process exit. Human mission play remains required to rate mouse smoothness, audio, and visual correctness.
 
 The next engineering gate is not more launcher UI. First play Dam and two renderer-stress missions on this exact profile, record input/audio/render defects, and freeze the quality settings. Then move mod work behind the Runtime Interface or migrate to a higher-quality native/decomp base without changing the player-facing launcher contract.

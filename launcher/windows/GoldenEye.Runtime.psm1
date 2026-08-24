@@ -75,8 +75,10 @@ function Get-QualityRuntimeExecutable {
     param([Parameter(Mandatory)][string]$InstallRoot)
 
     $runtime = Join-Path $InstallRoot '1964'
-    $qBranch = Join-Path $runtime '1964-qbranch.exe'
-    if (Test-Path -LiteralPath $qBranch -PathType Leaf) { return $qBranch }
+    $desktopGoldenEye = Join-Path $runtime 'DesktopGoldenEye.exe'
+    if (Test-Path -LiteralPath $desktopGoldenEye -PathType Leaf) { return $desktopGoldenEye }
+    $legacyQBranch = Join-Path $runtime '1964-qbranch.exe'
+    if (Test-Path -LiteralPath $legacyQBranch -PathType Leaf) { return $legacyQBranch }
     return (Join-Path $runtime '1964.exe')
 }
 
@@ -137,6 +139,7 @@ function Copy-LauncherFiles {
     if ($sourceRoot -ne $destinationRoot) {
         Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'GoldenEye.ps1') -Destination $destination -Force
         Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'GoldenEye.Launcher.ps1') -Destination $destination -Force
+        Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'DesktopGoldenEye.cmd') -Destination $destination -Force
         Copy-Item -LiteralPath $PSCommandPath -Destination $destination -Force
         Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Test-GoldenEye.Runtime.ps1') -Destination $destination -Force
         Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'adapters') -Destination $destination -Recurse -Force
@@ -486,7 +489,7 @@ function Get-GoldenEyeDiagnostics {
     param([Parameter(Mandatory)][string]$InstallRoot)
 
     $lines = New-Object System.Collections.Generic.List[string]
-    $lines.Add('1964 GEPD Q Branch diagnostics')
+    $lines.Add('DesktopGoldenEye diagnostics')
     $lines.Add("Generated: $([DateTime]::UtcNow.ToString('o'))")
     $lines.Add("Windows: $([Environment]::OSVersion.VersionString)")
     $lines.Add("PowerShell: $($PSVersionTable.PSVersion)")
@@ -496,7 +499,10 @@ function Get-GoldenEyeDiagnostics {
     $lines.Add("Selected core: $(Split-Path -Leaf $selectedExecutable)")
 
     $diagnosticFiles = @('1964\1964.exe', '1964\plugin\GLideN64.dll', '1964\plugin\Mouse_Injector.dll', '1964\plugin\AziAudio.dll')
-    if (Test-Path -LiteralPath (Join-Path $InstallRoot '1964\1964-qbranch.exe') -PathType Leaf) {
+    if (Test-Path -LiteralPath (Join-Path $InstallRoot '1964\DesktopGoldenEye.exe') -PathType Leaf) {
+        $diagnosticFiles = @('1964\DesktopGoldenEye.exe') + $diagnosticFiles
+    }
+    elseif (Test-Path -LiteralPath (Join-Path $InstallRoot '1964\1964-qbranch.exe') -PathType Leaf) {
         $diagnosticFiles = @('1964\1964-qbranch.exe') + $diagnosticFiles
     }
     foreach ($relativePath in $diagnosticFiles) {
@@ -637,8 +643,8 @@ function Start-QualityRuntime {
     $romAlias = Get-RomLaunchAlias -RomInfo $RomInfo
     $romDirectory = Split-Path -Parent $romAlias
     $runtimeExecutable = Get-QualityRuntimeExecutable -InstallRoot $InstallRoot
-    $usingQBranch = (Split-Path -Leaf $runtimeExecutable) -ieq '1964-qbranch.exe'
-    if (-not $usingQBranch -and $romDirectory -match '\s') {
+    $usingForkedCore = (Split-Path -Leaf $runtimeExecutable) -in @('DesktopGoldenEye.exe', '1964-qbranch.exe')
+    if (-not $usingForkedCore -and $romDirectory -match '\s') {
         throw "1964's command-line parser cannot use a ROM directory containing spaces: '$romDirectory'. Move the ROM to a path such as D:\Roms."
     }
 

@@ -31,7 +31,7 @@ Every milestone has an exit gate. A milestone is not complete because code exist
 
 ## M1 — Reproducible desktop vanilla baseline
 
-**Status:** two Windows proofs exist: the editable MGB64 build and the source-built 1964GEPD Q Branch Quality Adapter. The exact ROM boots through both. The Q Branch core builds with VS2022 and launches through the real launcher; a human Dam completion, later missions, and second-machine quality setup remain before the full gate is closed.
+**Status:** two Windows proofs exist: the editable MGB64 build and the source-built DesktopGoldenEye Quality Adapter. The exact ROM boots through both. DesktopGoldenEye builds with VS2022, packages as a self-contained ROM-free archive, and launches through the real launcher; a human Dam completion, later missions, and second-machine setup remain before the full gate is closed.
 
 **Purpose:** prove there is a game worth wrapping.
 
@@ -54,7 +54,7 @@ Every milestone has an exit gate. A milestone is not complete because code exist
 
 ## M2 — Asset-free launcher and direct ROM import
 
-**Status:** implemented for the first supported US ROM in both active Adapters. Q Branch accepts quoted paths and uses a verified byte-order-correct hard-link only when the filename extension is misleading; MGB64 consumes the selected ROM directly. Neither copies ROM data into Git or a release.
+**Status:** implemented for the first supported US ROM in both active Adapters. DesktopGoldenEye accepts quoted paths and uses a verified byte-order-correct hard-link only when the filename extension is misleading; MGB64 consumes the selected ROM directly. Neither copies ROM data into Git or a release.
 
 **Purpose:** achieve the Gen1Recomp first-run model.
 

@@ -3,7 +3,7 @@ param(
     [ValidateSet('Setup', 'Launcher', 'Play', 'Verify')][string]$Action = 'Launcher',
     [ValidateSet('Quality', 'Experimental')][string]$Runtime = 'Quality',
     [string]$RomPath,
-    [string]$InstallRoot = (Join-Path $env:LOCALAPPDATA 'GoldenEyeModPlatform'),
+    [string]$InstallRoot = (Join-Path $env:LOCALAPPDATA 'DesktopGoldenEye'),
     [string]$BundlePath,
     [string]$ExperimentalExecutable,
     [switch]$Windowed,
@@ -30,18 +30,8 @@ try {
     if ($Action -eq 'Setup') {
         $result = Install-GoldenEyeRuntime -InstallRoot $InstallRoot -RomPath $RomPath -BundlePath $BundlePath
 
-        $commandPath = Join-Path $InstallRoot 'Play GoldenEye (Quality).cmd'
-        $command = @'
-@echo off
-setlocal
-pushd "%~dp0"
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\launcher\GoldenEye.ps1" -Action Launcher -Runtime Quality -InstallRoot "."
-set "goldeneye_exit=%errorlevel%"
-popd
-if not "%goldeneye_exit%"=="0" pause
-exit /b %goldeneye_exit%
-'@
-        Set-Content -LiteralPath $commandPath -Value $command -Encoding ASCII
+        $commandPath = Join-Path $InstallRoot 'DesktopGoldenEye.cmd'
+        Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'DesktopGoldenEye.cmd') -Destination $commandPath -Force
         Write-Host "Quality runtime ready: $($result.RuntimePath)"
         Write-Host "Launcher: $commandPath"
         exit 0

@@ -98,7 +98,7 @@ function Get-Resolution {
 }
 
 $form = New-Object System.Windows.Forms.Form
-$form.Text = 'GoldenEye // Q Branch Launcher'
+$form.Text = 'DesktopGoldenEye'
 $form.ClientSize = New-Object System.Drawing.Size(1080, 760)
 $form.MinimumSize = New-Object System.Drawing.Size(1096, 799)
 $form.MaximumSize = New-Object System.Drawing.Size(1096, 799)
@@ -115,7 +115,7 @@ $left.Size = New-Object System.Drawing.Size(330, 760)
 $left.BackColor = $charcoal
 $form.Controls.Add($left)
 
-$classification = New-TextLabel -Text 'Q BRANCH  /  FIELD SYSTEMS' -X 30 -Y 29 -Width 260 -Height 22 -Size 9 -Color $cream -Style Bold
+$classification = New-TextLabel -Text 'DESKTOP EDITION  /  FIELD SYSTEMS' -X 30 -Y 29 -Width 260 -Height 22 -Size 9 -Color $cream -Style Bold
 $left.Controls.Add($classification)
 
 $accent = New-Object System.Windows.Forms.Panel
@@ -130,7 +130,7 @@ $left.Controls.Add($title)
 $edition = New-TextLabel -Text 'QUALITY RUNTIME  /  WINDOWS' -X 31 -Y 204 -Width 260 -Height 20 -Size 9 -Color ([System.Drawing.Color]::FromArgb(167, 174, 153)) -Style Bold
 $left.Controls.Add($edition)
 
-$brief = New-TextLabel -Text 'Verified 1964GEPD, GLideN64, and a launcher-owned modern input profile.' -X 31 -Y 244 -Width 255 -Height 62 -Size 10 -Color $cream
+$brief = New-TextLabel -Text 'Load your ROM. Play GoldenEye with modern mouse aiming and desktop quality settings.' -X 31 -Y 244 -Width 255 -Height 62 -Size 10 -Color $cream
 $left.Controls.Add($brief)
 
 $left.Controls.Add((New-TextLabel -Text 'FIELD CONTROLS' -X 31 -Y 342 -Width 220 -Height 24 -Size 9 -Color ([System.Drawing.Color]::FromArgb(167, 174, 153)) -Style Bold))
@@ -414,7 +414,7 @@ $launchButton.Cursor = [System.Windows.Forms.Cursors]::Hand
 $main.Controls.Add($launchButton)
 $form.AcceptButton = $launchButton
 
-$footer = New-TextLabel -Text 'Q BRANCH  /  1964GEPD  /  MOUSE INJECTOR 2.3  /  GLIDEN64' -X 40 -Y 726 -Width 670 -Height 20 -Size 7.5 -Color ([System.Drawing.Color]::FromArgb(126, 128, 118)) -Style Bold
+$footer = New-TextLabel -Text 'DESKTOPGOLDENEYE  /  1964GEPD  /  MOUSE INJECTOR 2.3  /  GLIDEN64' -X 40 -Y 726 -Width 670 -Height 20 -Size 7.5 -Color ([System.Drawing.Color]::FromArgb(126, 128, 118)) -Style Bold
 $main.Controls.Add($footer)
 
 $toolTip = New-Object System.Windows.Forms.ToolTip

@@ -10,7 +10,7 @@ if [[ -f "$repo_root/.env" ]]; then
   set +a
 fi
 
-stage="${GEMP_WINDOWS_STAGE:-/mnt/c/Users/${USER}/Source/goldeneye-mod-platform/mgb64}"
+stage="${GEMP_WINDOWS_STAGE:-/mnt/c/Users/${USER}/Source/DesktopGoldenEye/mgb64}"
 msys_root="${MSYS2_ROOT:-/mnt/c/msys64}"
 action="${1:-build}"
 version="${GEMP_VERSION:-dev}"

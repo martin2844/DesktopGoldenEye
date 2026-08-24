@@ -205,3 +205,19 @@ Each decision that changes should preserve the old entry, add a superseding entr
 **Why:** a stable player experience cannot depend on undocumented plugin dialog state. Presets expose useful tradeoffs while keeping a known-good reset path.
 
 **Consequence:** advanced plugin dialogs remain diagnostic tools. Any future renderer/input implementation must map the same player-facing settings or explicitly report unsupported options.
+
+## D-023 — DesktopGoldenEye is the product and release unit
+
+**Status:** Accepted; supersedes the Q Branch working name  
+**Decision:** name the repository, executable, launcher, and player archive DesktopGoldenEye. A Windows release is one extractable ROM-free archive containing every runtime dependency, launcher file, default profile, notice, and manifest required to play.
+
+**Player contract:** extract, run `DesktopGoldenEye.cmd`, select an unmodified US ROM, and press Play. No separate emulator/plugin download, installer, command line, or manual configuration is part of the supported journey.
+
+**Distribution gate:** the builder may create complete local qualification archives now. Publishing the combined third-party bundle waits for the plugin/asset inventory and required notices or permissions; no ROM is ever included.
+
+## D-024 — Desktop platforms share a product contract, not necessarily a core
+
+**Status:** Accepted  
+**Decision:** ship Windows first. Pursue Linux and macOS only through a portable runtime that meets the same rendering, input, audio, ROM-import, and mod contracts. Do not present Wine or an unqualified MGB64 build as a native port.
+
+**Why:** the proven 1964 x86 dynarec, Win32 host, and plugin ABI are Windows-specific. macOS also requires arm64 support and a non-OpenGL-first renderer on current hardware. Sharing launcher/mod schemas is realistic; pretending the current binary stack is portable is not.
