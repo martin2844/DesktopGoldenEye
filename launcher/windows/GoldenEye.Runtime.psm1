@@ -58,9 +58,11 @@ function Test-QualityRuntime {
     param([Parameter(Mandatory)][string]$InstallRoot)
     $runtime = Join-Path $InstallRoot '1964'
     $required = @(
-        '1964.exe',
         'BUNDLE_README.txt',
         'source.tar.xz',
+        'zlib.dll',
+        'msvcr100.dll',
+        'plugin\mouseinjector.ini',
         'plugin\GLideN64.dll',
         'plugin\Mouse_Injector.dll',
         'plugin\AziAudio.dll'
@@ -68,7 +70,11 @@ function Test-QualityRuntime {
     foreach ($relativePath in $required) {
         if (-not (Test-Path -LiteralPath (Join-Path $runtime $relativePath) -PathType Leaf)) { return $false }
     }
-    return $true
+    return (
+        (Test-Path -LiteralPath (Join-Path $runtime 'DesktopGoldenEye.exe') -PathType Leaf) -or
+        (Test-Path -LiteralPath (Join-Path $runtime '1964-qbranch.exe') -PathType Leaf) -or
+        (Test-Path -LiteralPath (Join-Path $runtime '1964.exe') -PathType Leaf)
+    )
 }
 
 function Get-QualityRuntimeExecutable {
@@ -623,6 +629,27 @@ public static class GoldenEyeWindowCapture
     [void][GoldenEyeWindowCapture]::SetCursorPos($center.X, $center.Y)
 }
 
+function Get-QualityRuntimeArguments {
+    param(
+        [Parameter(Mandatory)][string]$RomDirectory,
+        [Parameter(Mandatory)][string]$RomName,
+        [Parameter(Mandatory)][bool]$UsingForkedCore,
+        [switch]$Fullscreen
+    )
+
+    if ($UsingForkedCore) {
+        $arguments = '-r "{0}" -g "{1}" -v GLideN64.dll -a AziAudio.dll -c Mouse_Injector.dll -o 9' -f $RomDirectory, $RomName
+    }
+    else {
+        if ($RomDirectory -match '\s' -or $RomName -match '\s') {
+            throw 'The released 1964GEPD command-line parser requires a space-free ROM directory and launch alias.'
+        }
+        $arguments = '-r {0} -g {1} -v GLideN64.dll -a AziAudio.dll -c Mouse_Injector.dll -o 9' -f $RomDirectory, $RomName
+    }
+    if ($Fullscreen) { $arguments += ' -f' }
+    return $arguments
+}
+
 function Start-QualityRuntime {
     param(
         [Parameter(Mandatory)][string]$InstallRoot,
@@ -649,8 +676,9 @@ function Start-QualityRuntime {
     }
 
     $runtime = Join-Path $InstallRoot '1964'
-    $arguments = '-r "{0}" -g "{1}" -v GLideN64.dll -a AziAudio.dll -c Mouse_Injector.dll -o 9' -f $romDirectory, (Split-Path -Leaf $romAlias)
-    if ($Settings.displayMode -ne 'Windowed') { $arguments += ' -f' }
+    # The released 1964GEPD parser needs unquoted, space-free values. The path
+    # guard above and Get-RomLaunchAlias enforce that contract.
+    $arguments = Get-QualityRuntimeArguments -RomDirectory $romDirectory -RomName (Split-Path -Leaf $romAlias) -UsingForkedCore $usingForkedCore -Fullscreen:($Settings.displayMode -ne 'Windowed')
     if ([bool]$Settings.backupSaves) {
         [void](Backup-GoldenEyeSaves -InstallRoot $InstallRoot -Retention ([int]$Settings.backupRetention))
     }
@@ -717,4 +745,4 @@ function Start-GoldenEyeRuntime {
     return Start-ExperimentalRuntime -Executable $ExperimentalExecutable -RomInfo $rom -Wait:$Wait
 }
 
-Export-ModuleMember -Function Get-GoldenEyeRomInfo, Get-GoldenEyeLauncherSettings, Save-GoldenEyeLauncherSettings, Set-GoldenEyeRuntimeSettings, Backup-GoldenEyeSaves, Get-GoldenEyeDiagnostics, Get-QualityRuntimeExecutable, Install-GoldenEyeRuntime, Start-GoldenEyeRuntime
+Export-ModuleMember -Function Get-GoldenEyeRomInfo, Get-GoldenEyeLauncherSettings, Save-GoldenEyeLauncherSettings, Set-GoldenEyeRuntimeSettings, Backup-GoldenEyeSaves, Get-GoldenEyeDiagnostics, Get-QualityRuntimeExecutable, Get-QualityRuntimeArguments, Install-GoldenEyeRuntime, Start-GoldenEyeRuntime

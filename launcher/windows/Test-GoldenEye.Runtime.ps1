@@ -15,6 +15,8 @@ if ($rom.CanonicalSha1 -ne 'ABE01E4AEB033B6C0836819F549C791B26CFDE83') {
 
 $required = @(
     '1964\1964.exe',
+    '1964\zlib.dll',
+    '1964\msvcr100.dll',
     '1964\source.tar.xz',
     '1964\plugin\GLideN64.dll',
     '1964\plugin\Mouse_Injector.dll',
@@ -22,8 +24,7 @@ $required = @(
     'launcher\GoldenEye.Launcher.ps1',
     'launcher\GoldenEye.Runtime.psm1',
     'launcher\DesktopGoldenEye.cmd',
-    'DesktopGoldenEye.cmd',
-    'launcher-state.json'
+    'DesktopGoldenEye.cmd'
 )
 foreach ($relativePath in $required) {
     if (-not (Test-Path -LiteralPath (Join-Path $InstallRoot $relativePath) -PathType Leaf)) {
@@ -32,6 +33,7 @@ foreach ($relativePath in $required) {
 }
 
 $settings = Get-GoldenEyeLauncherSettings -InstallRoot $InstallRoot -RomPath $RomPath
+$settings = Save-GoldenEyeLauncherSettings -InstallRoot $InstallRoot -Settings $settings
 Set-GoldenEyeRuntimeSettings -InstallRoot $InstallRoot -Settings $settings
 
 $runtimeConfig = Get-Content -LiteralPath (Join-Path $InstallRoot '1964\1964.cfg') -Raw
@@ -59,19 +61,21 @@ $diagnostics = Get-GoldenEyeDiagnostics -InstallRoot $InstallRoot
 @('DesktopGoldenEye diagnostics', 'Runtime complete: True', 'Selected core:', 'ROM: verified') | ForEach-Object {
     if (-not $diagnostics.Contains($_)) { throw "Diagnostics output is missing: $_" }
 }
-$desktopExecutable = Join-Path $InstallRoot '1964\DesktopGoldenEye.exe'
-$legacyQBranchExecutable = Join-Path $InstallRoot '1964\1964-qbranch.exe'
-if (Test-Path -LiteralPath $desktopExecutable -PathType Leaf) {
-    $selectedExecutable = Get-QualityRuntimeExecutable -InstallRoot $InstallRoot
-    if ((Split-Path -Leaf $selectedExecutable) -ne 'DesktopGoldenEye.exe') {
-        throw 'The launcher did not prefer the installed DesktopGoldenEye core.'
-    }
-    if (-not $diagnostics.Contains('Selected core: DesktopGoldenEye.exe')) {
-        throw 'Diagnostics did not identify the selected DesktopGoldenEye core.'
-    }
+$selectedExecutable = Get-QualityRuntimeExecutable -InstallRoot $InstallRoot
+if ((Split-Path -Leaf $selectedExecutable) -ne '1964.exe') {
+    throw 'The v0.1 package did not select the release-qualified 1964GEPD core.'
 }
-elseif (Test-Path -LiteralPath $legacyQBranchExecutable -PathType Leaf) {
-    Write-Warning 'Using legacy 1964-qbranch.exe filename; rebuild to install DesktopGoldenEye.exe.'
+if (-not $diagnostics.Contains('Selected core: 1964.exe')) {
+    throw 'Diagnostics did not identify the selected 1964GEPD core.'
+}
+
+$legacyArguments = Get-QualityRuntimeArguments -RomDirectory 'D:\Roms' -RomName 'GoldenEye007USA.v64' -UsingForkedCore $false
+if ($legacyArguments -ne '-r D:\Roms -g GoldenEye007USA.v64 -v GLideN64.dll -a AziAudio.dll -c Mouse_Injector.dll -o 9') {
+    throw 'Legacy 1964GEPD launch arguments changed or regained incompatible quoting.'
+}
+$forkedArguments = Get-QualityRuntimeArguments -RomDirectory 'D:\My Roms' -RomName 'Golden Eye.v64' -UsingForkedCore $true -Fullscreen
+if ($forkedArguments -ne '-r "D:\My Roms" -g "Golden Eye.v64" -v GLideN64.dll -a AziAudio.dll -c Mouse_Injector.dll -o 9 -f') {
+    throw 'Forked-core quoted launch arguments changed unexpectedly.'
 }
 
 $mouseProfile = @(Get-Content -LiteralPath (Join-Path $InstallRoot '1964\plugin\mouseinjector.ini') | ForEach-Object { [int]$_ })

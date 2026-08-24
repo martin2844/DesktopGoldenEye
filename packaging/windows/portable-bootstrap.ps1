@@ -45,7 +45,7 @@ try {
             $candidate = @(Get-ChildItem -LiteralPath $staging -Directory)
             if ($candidate.Count -ne 1) { throw 'Portable payload must contain exactly one product directory.' }
             $candidateRoot = $candidate[0].FullName
-            foreach ($required in @('DesktopGoldenEye.cmd', 'release-manifest.json', '1964\DesktopGoldenEye.exe', 'launcher\GoldenEye.ps1')) {
+            foreach ($required in @('DesktopGoldenEye.cmd', 'release-manifest.json', '1964\1964.exe', 'launcher\GoldenEye.ps1')) {
                 if (-not (Test-Path -LiteralPath (Join-Path $candidateRoot $required) -PathType Leaf)) {
                     throw "Portable payload is missing $required"
                 }
