@@ -70,21 +70,13 @@ function Test-QualityRuntime {
     foreach ($relativePath in $required) {
         if (-not (Test-Path -LiteralPath (Join-Path $runtime $relativePath) -PathType Leaf)) { return $false }
     }
-    return (
-        (Test-Path -LiteralPath (Join-Path $runtime 'DesktopGoldenEye.exe') -PathType Leaf) -or
-        (Test-Path -LiteralPath (Join-Path $runtime '1964-qbranch.exe') -PathType Leaf) -or
-        (Test-Path -LiteralPath (Join-Path $runtime '1964.exe') -PathType Leaf)
-    )
+    return (Test-Path -LiteralPath (Join-Path $runtime '1964.exe') -PathType Leaf)
 }
 
 function Get-QualityRuntimeExecutable {
     param([Parameter(Mandatory)][string]$InstallRoot)
 
     $runtime = Join-Path $InstallRoot '1964'
-    $desktopGoldenEye = Join-Path $runtime 'DesktopGoldenEye.exe'
-    if (Test-Path -LiteralPath $desktopGoldenEye -PathType Leaf) { return $desktopGoldenEye }
-    $legacyQBranch = Join-Path $runtime '1964-qbranch.exe'
-    if (Test-Path -LiteralPath $legacyQBranch -PathType Leaf) { return $legacyQBranch }
     return (Join-Path $runtime '1964.exe')
 }
 

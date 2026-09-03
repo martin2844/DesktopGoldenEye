@@ -128,6 +128,45 @@ foreach ($relativePath in $required) {
     }
 }
 
+$selectionTestRoot = Join-Path $env:TEMP ("DesktopGoldenEye-core-selection-test-" + [guid]::NewGuid().ToString('N'))
+try {
+    $selectionRuntime = Join-Path $selectionTestRoot '1964'
+    foreach ($relativePath in @(
+        'BUNDLE_README.txt',
+        'source.tar.xz',
+        'zlib.dll',
+        'msvcr100.dll',
+        'plugin\mouseinjector.ini',
+        'plugin\GLideN64.dll',
+        'plugin\Mouse_Injector.dll',
+        'plugin\AziAudio.dll',
+        'DesktopGoldenEye.exe',
+        '1964-qbranch.exe'
+    )) {
+        $path = Join-Path $selectionRuntime $relativePath
+        New-Item -ItemType Directory -Path (Split-Path -Parent $path) -Force | Out-Null
+        Set-Content -LiteralPath $path -Value 'selection-test' -Encoding ASCII
+    }
+    $experimentalOnlyIsQuality = & (Get-Module GoldenEye.Runtime) {
+        param($TestRoot)
+        Test-QualityRuntime -InstallRoot $TestRoot
+    } $selectionTestRoot
+    if ($experimentalOnlyIsQuality) {
+        throw 'Experimental source-built cores were incorrectly accepted as the quality runtime.'
+    }
+
+    Set-Content -LiteralPath (Join-Path $selectionRuntime '1964.exe') -Value 'stable-selection-test' -Encoding ASCII
+    $stableSelection = Get-QualityRuntimeExecutable -InstallRoot $selectionTestRoot
+    if ((Split-Path -Leaf $stableSelection) -ne '1964.exe') {
+        throw 'Experimental source-built cores took precedence over the release-qualified stable core.'
+    }
+}
+finally {
+    if (Test-Path -LiteralPath $selectionTestRoot -PathType Container) {
+        Remove-Item -LiteralPath $selectionTestRoot -Recurse -Force
+    }
+}
+
 $settings = Get-GoldenEyeLauncherSettings -InstallRoot $InstallRoot -RomPath $RomPath
 $settings = Save-GoldenEyeLauncherSettings -InstallRoot $InstallRoot -Settings $settings
 Set-GoldenEyeRuntimeSettings -InstallRoot $InstallRoot -Settings $settings
